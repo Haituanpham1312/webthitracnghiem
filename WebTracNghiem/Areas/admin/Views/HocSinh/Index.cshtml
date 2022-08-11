@@ -1,0 +1,424 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+<link href="~/Content/datepicker/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm mới Hs</button>
+    </div>
+    <div class="col-sm-4 col-sm-offset-6 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="...">
+    <ul class="pagination pagination-sm" id="phanTrang"></ul>
+</nav>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Mã học sinh
+            </th>
+            <th>
+                Họ tên
+            </th>
+            <th>
+                Ngày sinh
+            </th>
+            <th>
+                Điện thoại
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                Địa chỉ
+            </th>
+            <th>Chức năng </th>
+        </tr>
+    </thead>
+    <tbody id="tblDsHs"> </tbody>
+
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalHs">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idHs" value="" />
+                    <div class="form-group">
+                        <label>Mã học sinh(<span class="text-danger">*</span>)</label>
+                        <input type="text" style="width:100px" class="form-control" id="maHocSinh" placeholder="Mã học sinh">
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu(<span class="text-danger">*</span>)</label>
+                        <input type="password" class="form-control" id="matKHau" placeholder="Mật khẩu">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Họ & tên(<span class="text-danger">*</span>)</label>
+                        <input type="text" class="form-control" id="hoTen" placeholder="Họ và tên học sinh">
+                    </div>
+
+
+                    
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label>Ngày sinh</label>
+                                <div class="input-group date" data-provide="datepicker">
+                                    <input type="text" class="form-control datepicker">
+                                    <div class="input-group-addon">
+                                        <span class="glyphicon glyphicon-th"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label>Điện thoại</label>
+                                    <input type="text" class="form-control" id="dienThoai" placeholder="Điện thoại">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Email của học sinh">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ</label>
+                        <input type="text" class="form-control" id="diaChi" placeholder="Địa chỉ">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts{
+
+    <script src="~/Content/datepicker/js/bootstrap-datepicker.js"></script>
+    <script>
+        var tuKhoa = '';
+        var trang = 1;
+
+        $(".datepicker").datepicker({
+            format: 'yyyy-mm-dd'
+        });
+
+        $(document).ready(function () {
+            selectHs(tuKhoa, trang);
+        });
+
+        //sự kiện enter của text có id là txtSearch
+        $('#txtSearch').on('keypress', function (e) {
+            if (e.which == 13) {//nếu phím đc gõ là enter
+                $('#btnSearch').click();//thì gọi tới sự kiện click của button có id là btnSearch
+            }
+        });
+
+        //sự kiện click của button tìm kiếm
+        $('#btnSearch').click(function () {
+            trang = 1;
+            tuKhoa = $('#txtSearch').val();
+            selectHs(tuKhoa, trang);
+        });
+
+
+
+        //sự kiện của button xác nhận
+        $('#btnSubmit').click(function () {
+            let idHs = $('#idHs').val().trim();
+
+            let maHocSinh = $('#maHocSinh').val().trim();
+            let matKhau = $('#matKHau').val().trim();
+            let hoTen = $('#hoTen').val().trim();
+            let ngaySinh = $('.datepicker').val();
+            let dienThoai = $('#dienThoai').val().trim();
+            let email = $('#email').val().trim();
+            let diaChi = $('#diaChi').val().trim();
+          
+            //ràng buộc dữ liệu
+            if (maHocSinh.length == 0 || matKhau.length == 0 || hoTen.length == 0) {
+                alert('Vui lòng nhập đầy đủ thông tin ở các trường có dấu *');
+                return;
+            }
+
+            if (idHs.length == 0) {//trường hợp thêm mới học sinh
+                $.ajax({
+                    url: '/admin/hocsinh/AddHs',
+                    type: 'post',
+                    data: {
+                        maHs: maHocSinh,
+                        matKhau: matKhau,
+                        hoTen: hoTen,
+                        ngaySinh:ngaySinh,
+                        soDienThoai: dienThoai,
+                        email: email,
+                        diaChi: diaChi                     
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            selectHs(tuKhoa, trang);
+                            $('#maHocSinh').val('');
+                            $('#matKHau').val('');
+                            $('#hoTen').val('');
+                            $('.datepicker').val('');
+                            $('#dienThoai').val('');
+                            $('#email').val('');
+                            $('#diaChi').val('');                        
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+            } else {//trường hợp cập nhật giáo viên
+                $.ajax({
+                    url: '/admin/hocsinh/EditHs',
+                    type: 'post',
+                    data: {
+                        maHs: idHs,
+                        matKhau: matKhau,
+                        hoTen: hoTen,
+                        ngaySinh: ngaySinh,
+                        soDienThoai: dienThoai,
+                        email: email,
+                        diaChi: diaChi                     
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            selectHs(tuKhoa, trang);
+                            $('#modalHs').modal('hide');
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+
+
+
+        });
+
+
+        //sự kiện click của button thêm mới giáo viên
+        $('#btnAdd').click(function () {
+            //set header của modal lớp
+            $('#modalTitle').text('Thêm mới học sinh');
+
+            //set giá trị mặc định cho các thành phần của form
+            $('#idHs').val('');
+            $('#maHocSinh').val('');
+            $('#matKHau').val('');
+            $('#hoTen').val('');
+            $('.datepicker').val('');
+            $('#dienThoai').val('');
+            $('#email').val('');
+            $('#diaChi').val('');          
+
+
+            $('#maHocSinh').prop('readonly', false);
+            $('#matKHau').prop('readonly', false);
+            $('#hoTen').prop('readonly', false);
+            $('#dienThoai').prop('readonly', false);
+            $('#email').prop('readonly', false);
+            $('#diaChi').prop('readonly', false);         
+
+            //ẩn button xác nhận
+            $('#btnSubmit').show();
+
+            //hiển thị modal lên
+            $('#modalHs').modal();
+        })
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            selectHs(tuKhoa, trang)
+        });
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let id = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa học sinh này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/admin/hocsinh/DeleteHs',
+                    type: 'post',
+                    data: {
+                        maHs: id
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            selectHs(tuKhoa, trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        $(document).on('click', "button[name='update']", function () {
+            let id = $(this).closest('tr').attr('id');
+          
+            $('#idHs').val(id);//gán vào giá trị cho thằng textbox hidden có giá trị để đánh dấu là trường hợp cập nhật
+            getHs(id);
+            $('#modalHs').modal();
+
+            //set header của modal lớp
+            $('#modalTitle').text('Cập nhật thông tin của học sinh');
+
+            $('#maHocSinh').prop('readonly', true);
+            $('#matKHau').prop('readonly', false);
+            $('#hoTen').prop('readonly', false);
+            $('.datepicker').prop('readonly', false);
+            $('#dienThoai').prop('readonly', false);
+            $('#email').prop('readonly', false);
+            $('#diaChi').prop('readonly', false);
+          
+            ////ẩn button xác nhận
+            $('#btnSubmit').show();
+        });
+
+        //sự kiện click button chi tiết của mỗi dòng table
+        $(document).on('click', "button[name='view']", function () {
+            let id = $(this).closest('tr').attr('id');           
+            $('#modalHs').modal();
+            getHs(id);
+            //set header của modal lớp
+            $('#modalTitle').text('Thông tin chi tiết của học sinh');
+
+            
+
+          
+            $('#btnSubmit').hide();
+        });
+
+        function getHs(id) {
+            $.ajax({
+                url: '/admin/hocsinh/LayHs',
+                type: 'get',
+                data: {
+                    mhs: id
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        //set giá trị mặc định cho các thành phần của form
+                        $('#maHocSinh').val(data.hs.MaHocSinh);
+                        $('#matKHau').val(data.hs.MatKhau);
+                        $('#hoTen').val(data.hs.HoTen);
+                        $('.datepicker').val(ConvertJsonDateString(data.hs.NgaySinh));
+                        $('#dienThoai').val(data.hs.DienThoai);
+                        $('#email').val(data.hs.Email);
+                        $('#diaChi').val(data.hs.DiaChi);
+                       
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        //hàm load danh sách lớp đổ vào table
+        function selectHs(search, trang) {
+            //dùng ajax để load danh sách lớp trong controller lop
+            $.ajax({
+                url: '/admin/hocsinh/SelectHs',
+                type: 'get',
+                data: {
+                    tuKhoa: search,
+                    trang: trang
+                },
+                success: function (data) {
+                    //console.log(data);
+                    if (data.code == 200) {
+                        $('#tblDsHs').empty();                      
+                        $.each(data.dsHs, function (k, v) {
+                            let tr = '<tr id="' + v.Id + '">'
+                            tr += '<td class = "col-sm-2">' + v.Id + '</td>';
+                            tr += '<td class = "col-sm-2">' + v.HoTen + '</td>';
+                            tr += '<td class = "col-sm-1">' + ConvertJsonDateString(v.NgaySinh) + '</td>';
+                            tr += '<td class = "col-sm-2">' + (v.DienThoai == null ? '' : v.DienThoai) + '</td>';
+                            tr += '<td class = "col-sm-3">' + (v.Email == null ? '' : v.Email) + '</td>';
+                            tr += '<td class = "col-sm-1">' + (v.DiaChi == null ? '' : v.DiaChi) + '</td>';
+                            tr += '<td class = "col-sm-3 text-right">';
+                            tr += '<button class = "btn btn-xs btn-info" name = "view"><i class="fa fa-info-circle" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                            tr += '</td>';
+                            tr += '</tr>';
+                            $('#tblDsHs').append(tr);
+                        });
+
+                        //phân trang
+
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+
+                    }
+                }
+            });
+        }
+
+
+        function ConvertJsonDateString(jsonDate) {  
+        var shortDate = null;    
+        if (jsonDate) {  
+            var regex = /-?\d+/;  
+            var matches = regex.exec(jsonDate);  
+            var dt = new Date(parseInt(matches[0]));  
+            var month = dt.getMonth() + 1;  
+            var monthString = month > 9 ? month : '0' + month;  
+            var day = dt.getDate();  
+            var dayString = day > 9 ? day : '0' + day;  
+            var year = dt.getFullYear();  
+            shortDate = monthString + '/' + dayString + '/' + year;  
+        }  
+        return shortDate;  
+        };
+    </script>
+
+
+
+}

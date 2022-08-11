@@ -1,0 +1,572 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="DBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+  <EntityType Name="Admin">
+    <Key>
+      <PropertyRef Name="TaiKhoan" />
+    </Key>
+    <Property Name="TaiKhoan" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="MatKhau" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+  </EntityType>
+  <EntityType Name="Bai">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenBai" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+    <Property Name="Meta" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+    <Property Name="IdChuong" Type="Int32" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="Chuong" Relationship="Self.FK_Bais_Chuongs" FromRole="Bais" ToRole="Chuongs" />
+    <NavigationProperty Name="CauHois" Relationship="Self.FK_CauHois_Bais" FromRole="Bais" ToRole="CauHois" />
+  </EntityType>
+  <EntityType Name="CauHinh">
+    <Key>
+      <PropertyRef Name="TuKhoa" />
+    </Key>
+    <Property Name="TuKhoa" Type="String" MaxLength="20" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="GiaTri" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="MoTa" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+  </EntityType>
+  <EntityType Name="CauHois">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="Cauhoi" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="dap_an_a" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="dap_an_b" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="dap_an_c" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="dap_an_d" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="IdDapAn" Type="Int32" />
+    <Property Name="ghi_chu" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+    <Property Name="DaPheDuyet" Type="Byte" />
+    <Property Name="NguoiPheDuyet" Type="Int32" />
+    <Property Name="IdBai" Type="Int32" />
+    <Property Name="IdMucDo" Type="Int32" />
+    <Property Name="NguoiTao" Type="Int32" />
+    <Property Name="NgayTao" Type="DateTime" Precision="3" />
+    <Property Name="NguoiSua" Type="Int32" />
+    <Property Name="NgaySua" Type="DateTime" Precision="3" />
+    <Property Name="DaXoa" Type="Byte" />
+    <Property Name="NgayXoa" Type="DateTime" Precision="3" />
+    <Property Name="NguoiXoa" Type="Int32" />
+    <NavigationProperty Name="Bai" Relationship="Self.FK_CauHois_Bais" FromRole="CauHois" ToRole="Bais" />
+    <NavigationProperty Name="DapAn" Relationship="Self.FK_CauHois_DapAns" FromRole="CauHois" ToRole="DapAns" />
+    <NavigationProperty Name="MucDoKho" Relationship="Self.FK_CauHois_MucDoKhos" FromRole="CauHois" ToRole="MucDoKhos" />
+    <NavigationProperty Name="DeThi_ChiTiets" Relationship="Self.FK_DeThi_ChiTiets_CauHois" FromRole="CauHois" ToRole="DeThi_ChiTiets" />
+  </EntityType>
+  <EntityType Name="Chuong">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenChuong" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="Meta" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="IdMonHoc" Type="Int32" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="Bais" Relationship="Self.FK_Bais_Chuongs" FromRole="Chuongs" ToRole="Bais" />
+    <NavigationProperty Name="MonHoc" Relationship="Self.FK_Chuongs_MonHocs" FromRole="Chuongs" ToRole="MonHocs" />
+  </EntityType>
+  <EntityType Name="DapAn">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="DapAnDung" Type="String" MaxLength="1" FixedLength="true" Unicode="true" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="CauHois" Relationship="Self.FK_CauHois_DapAns" FromRole="DapAns" ToRole="CauHois" />
+  </EntityType>
+  <EntityType Name="Day">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="IdGiaoVien" Type="Int32" Nullable="false" />
+    <Property Name="IdLop" Type="Int32" Nullable="false" />
+    <Property Name="IdMonHoc" Type="Int32" Nullable="false" />
+    <Property Name="TuNgay" Type="DateTime" Precision="0" />
+    <Property Name="ToiNgay" Type="DateTime" Precision="0" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="GiaoVien" Relationship="Self.FK_Days_GiaoViens" FromRole="Days" ToRole="GiaoViens" />
+    <NavigationProperty Name="Lop" Relationship="Self.FK_Days_Lops1" FromRole="Days" ToRole="Lops" />
+    <NavigationProperty Name="MonHoc" Relationship="Self.FK_Days_MonHocs" FromRole="Days" ToRole="MonHocs" />
+  </EntityType>
+  <EntityType Name="DeThi_ChiTiets">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="IdDeThi" Type="Int32" />
+    <Property Name="IdCauHoi" Type="Int64" />
+    <NavigationProperty Name="CauHois" Relationship="Self.FK_DeThi_ChiTiets_CauHois" FromRole="DeThi_ChiTiets" ToRole="CauHois" />
+    <NavigationProperty Name="DeThi" Relationship="Self.FK_DeThi_ChiTiets_DeThis" FromRole="DeThi_ChiTiets" ToRole="DeThis" />
+    <NavigationProperty Name="KetQuas" Relationship="Self.FK_KetQuas_DeThi_ChiTiets" FromRole="DeThi_ChiTiets" ToRole="KetQuas" />
+  </EntityType>
+  <EntityType Name="DeThi">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="IdMonHoc" Type="Int32" />
+    <Property Name="NgayThi" Type="DateTime" Precision="3" />
+    <Property Name="GvTao" Type="Int32" />
+    <Property Name="DaDuyet" Type="Byte" />
+    <Property Name="DaXoa" Type="Byte" />
+    <Property Name="IdNhom" Type="Int32" />
+    <NavigationProperty Name="DeThi_ChiTiets" Relationship="Self.FK_DeThi_ChiTiets_DeThis" FromRole="DeThis" ToRole="DeThi_ChiTiets" />
+    <NavigationProperty Name="GiaoVien" Relationship="Self.FK_DeThis_GiaoViens" FromRole="DeThis" ToRole="GiaoViens" />
+    <NavigationProperty Name="MonHoc" Relationship="Self.FK_DeThis_MonHocs" FromRole="DeThis" ToRole="MonHocs" />
+    <NavigationProperty Name="NhomDeThi" Relationship="Self.FK_DeThis_NhomDeThis" FromRole="DeThis" ToRole="NhomDeThis" />
+  </EntityType>
+  <EntityType Name="GiaoVien">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="MaGiaoVien" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+    <Property Name="MatKhau" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+    <Property Name="HoTen" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+    <Property Name="SoDienThoai" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+    <Property Name="Email" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="DiaChi" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="Days" Relationship="Self.FK_Days_GiaoViens" FromRole="GiaoViens" ToRole="Days" />
+    <NavigationProperty Name="DeThis" Relationship="Self.FK_DeThis_GiaoViens" FromRole="GiaoViens" ToRole="DeThis" />
+    <NavigationProperty Name="MonHocs" Relationship="Self.FK_MonHocs_GiaoViens" FromRole="GiaoViens" ToRole="MonHocs" />
+  </EntityType>
+  <EntityType Name="Hoc">
+    <Key>
+      <PropertyRef Name="MaHocSinh" />
+      <PropertyRef Name="IdLop" />
+      <PropertyRef Name="NamHoc" />
+    </Key>
+    <Property Name="MaHocSinh" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="IdLop" Type="Int32" Nullable="false" />
+    <Property Name="NamHoc" Type="Int32" Nullable="false" />
+    <NavigationProperty Name="HocSinh" Relationship="Self.FK_Hocs_HocSinhs" FromRole="Hocs" ToRole="HocSinhs" />
+    <NavigationProperty Name="Lop" Relationship="Self.FK_Hocs_Lops" FromRole="Hocs" ToRole="Lops" />
+  </EntityType>
+  <EntityType Name="HocSinh">
+    <Key>
+      <PropertyRef Name="MaHocSinh" />
+    </Key>
+    <Property Name="MaHocSinh" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="MatKhau" Type="String" MaxLength="250" FixedLength="false" Unicode="false" />
+    <Property Name="HoTen" Type="String" MaxLength="30" FixedLength="false" Unicode="true" />
+    <Property Name="NgaySinh" Type="DateTime" Precision="3" />
+    <Property Name="Email" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+    <Property Name="DienThoai" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+    <Property Name="DiaChi" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="Hocs" Relationship="Self.FK_Hocs_HocSinhs" FromRole="HocSinhs" ToRole="Hocs" />
+    <NavigationProperty Name="KetQuas" Relationship="Self.FK_KetQuas_ThanhViens" FromRole="HocSinhs" ToRole="KetQuas" />
+  </EntityType>
+  <EntityType Name="KetQua">
+    <Key>
+      <PropertyRef Name="IdThanhVien" />
+      <PropertyRef Name="IdCauHoi_DeThi" />
+    </Key>
+    <Property Name="IdThanhVien" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+    <Property Name="IdCauHoi_DeThi" Type="Int64" Nullable="false" />
+    <Property Name="DapAn" Type="String" MaxLength="1" FixedLength="false" Unicode="false" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="DeThi_ChiTiets" Relationship="Self.FK_KetQuas_DeThi_ChiTiets" FromRole="KetQuas" ToRole="DeThi_ChiTiets" />
+    <NavigationProperty Name="HocSinh" Relationship="Self.FK_KetQuas_ThanhViens" FromRole="KetQuas" ToRole="HocSinhs" />
+  </EntityType>
+  <EntityType Name="Khois">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenKhoi" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <NavigationProperty Name="Lops" Relationship="Self.FK_Lops_Khois" FromRole="Khois" ToRole="Lops" />
+    <NavigationProperty Name="MonHocs" Relationship="Self.FK_MonHocs_Khois" FromRole="Khois" ToRole="MonHocs" />
+  </EntityType>
+  <EntityType Name="Lop">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenLop" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="Meta" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="IdKhoi" Type="Int32" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="Days" Relationship="Self.FK_Days_Lops1" FromRole="Lops" ToRole="Days" />
+    <NavigationProperty Name="Hocs" Relationship="Self.FK_Hocs_Lops" FromRole="Lops" ToRole="Hocs" />
+    <NavigationProperty Name="Khois" Relationship="Self.FK_Lops_Khois" FromRole="Lops" ToRole="Khois" />
+  </EntityType>
+  <EntityType Name="MonHoc">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenMonHoc" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="Meta" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+    <Property Name="IdKhoi" Type="Int32" />
+    <Property Name="IdTBM" Type="Int32" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="Chuongs" Relationship="Self.FK_Chuongs_MonHocs" FromRole="MonHocs" ToRole="Chuongs" />
+    <NavigationProperty Name="Days" Relationship="Self.FK_Days_MonHocs" FromRole="MonHocs" ToRole="Days" />
+    <NavigationProperty Name="DeThis" Relationship="Self.FK_DeThis_MonHocs" FromRole="MonHocs" ToRole="DeThis" />
+    <NavigationProperty Name="GiaoVien" Relationship="Self.FK_MonHocs_GiaoViens" FromRole="MonHocs" ToRole="GiaoViens" />
+    <NavigationProperty Name="Khois" Relationship="Self.FK_MonHocs_Khois" FromRole="MonHocs" ToRole="Khois" />
+  </EntityType>
+  <EntityType Name="MucDoKho">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenMucDo" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
+    <Property Name="DaXoa" Type="Byte" />
+    <NavigationProperty Name="CauHois" Relationship="Self.FK_CauHois_MucDoKhos" FromRole="MucDoKhos" ToRole="CauHois" />
+  </EntityType>
+  <EntityType Name="NhomDeThi">
+    <Key>
+      <PropertyRef Name="ID" />
+    </Key>
+    <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+    <Property Name="TenNhom" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+    <Property Name="ThoiGianThi" Type="Int32" />
+    <NavigationProperty Name="DeThis" Relationship="Self.FK_DeThis_NhomDeThis" FromRole="NhomDeThis" ToRole="DeThis" />
+  </EntityType>
+  <Association Name="FK_Bais_Chuongs">
+    <End Role="Chuongs" Type="Self.Chuong" Multiplicity="0..1" />
+    <End Role="Bais" Type="Self.Bai" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Chuongs">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Bais">
+        <PropertyRef Name="IdChuong" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CauHois_Bais">
+    <End Role="Bais" Type="Self.Bai" Multiplicity="0..1" />
+    <End Role="CauHois" Type="Self.CauHois" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Bais">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="CauHois">
+        <PropertyRef Name="IdBai" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CauHois_DapAns">
+    <End Role="DapAns" Type="Self.DapAn" Multiplicity="0..1" />
+    <End Role="CauHois" Type="Self.CauHois" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DapAns">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="CauHois">
+        <PropertyRef Name="IdDapAn" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_CauHois_MucDoKhos">
+    <End Role="MucDoKhos" Type="Self.MucDoKho" Multiplicity="0..1" />
+    <End Role="CauHois" Type="Self.CauHois" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="MucDoKhos">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="CauHois">
+        <PropertyRef Name="IdMucDo" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DeThi_ChiTiets_CauHois">
+    <End Role="CauHois" Type="Self.CauHois" Multiplicity="0..1" />
+    <End Role="DeThi_ChiTiets" Type="Self.DeThi_ChiTiets" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="CauHois">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="DeThi_ChiTiets">
+        <PropertyRef Name="IdCauHoi" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Chuongs_MonHocs">
+    <End Role="MonHocs" Type="Self.MonHoc" Multiplicity="0..1" />
+    <End Role="Chuongs" Type="Self.Chuong" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="MonHocs">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Chuongs">
+        <PropertyRef Name="IdMonHoc" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Days_GiaoViens">
+    <End Role="GiaoViens" Type="Self.GiaoVien" Multiplicity="1" />
+    <End Role="Days" Type="Self.Day" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="GiaoViens">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Days">
+        <PropertyRef Name="IdGiaoVien" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Days_Lops1">
+    <End Role="Lops" Type="Self.Lop" Multiplicity="1" />
+    <End Role="Days" Type="Self.Day" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Lops">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Days">
+        <PropertyRef Name="IdLop" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Days_MonHocs">
+    <End Role="MonHocs" Type="Self.MonHoc" Multiplicity="1" />
+    <End Role="Days" Type="Self.Day" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="MonHocs">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Days">
+        <PropertyRef Name="IdMonHoc" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DeThi_ChiTiets_DeThis">
+    <End Role="DeThis" Type="Self.DeThi" Multiplicity="0..1" />
+    <End Role="DeThi_ChiTiets" Type="Self.DeThi_ChiTiets" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DeThis">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="DeThi_ChiTiets">
+        <PropertyRef Name="IdDeThi" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_KetQuas_DeThi_ChiTiets">
+    <End Role="DeThi_ChiTiets" Type="Self.DeThi_ChiTiets" Multiplicity="1" />
+    <End Role="KetQuas" Type="Self.KetQua" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="DeThi_ChiTiets">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="KetQuas">
+        <PropertyRef Name="IdCauHoi_DeThi" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DeThis_GiaoViens">
+    <End Role="GiaoViens" Type="Self.GiaoVien" Multiplicity="0..1" />
+    <End Role="DeThis" Type="Self.DeThi" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="GiaoViens">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="DeThis">
+        <PropertyRef Name="GvTao" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DeThis_MonHocs">
+    <End Role="MonHocs" Type="Self.MonHoc" Multiplicity="0..1" />
+    <End Role="DeThis" Type="Self.DeThi" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="MonHocs">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="DeThis">
+        <PropertyRef Name="IdMonHoc" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_DeThis_NhomDeThis">
+    <End Role="NhomDeThis" Type="Self.NhomDeThi" Multiplicity="0..1" />
+    <End Role="DeThis" Type="Self.DeThi" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="NhomDeThis">
+        <PropertyRef Name="ID" />
+      </Principal>
+      <Dependent Role="DeThis">
+        <PropertyRef Name="IdNhom" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MonHocs_GiaoViens">
+    <End Role="GiaoViens" Type="Self.GiaoVien" Multiplicity="0..1" />
+    <End Role="MonHocs" Type="Self.MonHoc" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="GiaoViens">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MonHocs">
+        <PropertyRef Name="IdTBM" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Hocs_HocSinhs">
+    <End Role="HocSinhs" Type="Self.HocSinh" Multiplicity="1" />
+    <End Role="Hocs" Type="Self.Hoc" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="HocSinhs">
+        <PropertyRef Name="MaHocSinh" />
+      </Principal>
+      <Dependent Role="Hocs">
+        <PropertyRef Name="MaHocSinh" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Hocs_Lops">
+    <End Role="Lops" Type="Self.Lop" Multiplicity="1" />
+    <End Role="Hocs" Type="Self.Hoc" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Lops">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Hocs">
+        <PropertyRef Name="IdLop" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_KetQuas_ThanhViens">
+    <End Role="HocSinhs" Type="Self.HocSinh" Multiplicity="1" />
+    <End Role="KetQuas" Type="Self.KetQua" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="HocSinhs">
+        <PropertyRef Name="MaHocSinh" />
+      </Principal>
+      <Dependent Role="KetQuas">
+        <PropertyRef Name="IdThanhVien" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_Lops_Khois">
+    <End Role="Khois" Type="Self.Khois" Multiplicity="0..1" />
+    <End Role="Lops" Type="Self.Lop" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Khois">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Lops">
+        <PropertyRef Name="IdKhoi" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MonHocs_Khois">
+    <End Role="Khois" Type="Self.Khois" Multiplicity="0..1" />
+    <End Role="MonHocs" Type="Self.MonHoc" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Khois">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MonHocs">
+        <PropertyRef Name="IdKhoi" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <EntityContainer Name="DBEntities" annotation:LazyLoadingEnabled="true">
+    <EntitySet Name="Admins" EntityType="Self.Admin" />
+    <EntitySet Name="Bais" EntityType="Self.Bai" />
+    <EntitySet Name="CauHinhs" EntityType="Self.CauHinh" />
+    <EntitySet Name="CauHois" EntityType="Self.CauHois" />
+    <EntitySet Name="Chuongs" EntityType="Self.Chuong" />
+    <EntitySet Name="DapAns" EntityType="Self.DapAn" />
+    <EntitySet Name="Days" EntityType="Self.Day" />
+    <EntitySet Name="DeThi_ChiTiets" EntityType="Self.DeThi_ChiTiets" />
+    <EntitySet Name="DeThis" EntityType="Self.DeThi" />
+    <EntitySet Name="GiaoViens" EntityType="Self.GiaoVien" />
+    <EntitySet Name="Hocs" EntityType="Self.Hoc" />
+    <EntitySet Name="HocSinhs" EntityType="Self.HocSinh" />
+    <EntitySet Name="KetQuas" EntityType="Self.KetQua" />
+    <EntitySet Name="Khois" EntityType="Self.Khois" />
+    <EntitySet Name="Lops" EntityType="Self.Lop" />
+    <EntitySet Name="MonHocs" EntityType="Self.MonHoc" />
+    <EntitySet Name="MucDoKhos" EntityType="Self.MucDoKho" />
+    <EntitySet Name="NhomDeThis" EntityType="Self.NhomDeThi" />
+    <AssociationSet Name="FK_Bais_Chuongs" Association="Self.FK_Bais_Chuongs">
+      <End Role="Chuongs" EntitySet="Chuongs" />
+      <End Role="Bais" EntitySet="Bais" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CauHois_Bais" Association="Self.FK_CauHois_Bais">
+      <End Role="Bais" EntitySet="Bais" />
+      <End Role="CauHois" EntitySet="CauHois" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CauHois_DapAns" Association="Self.FK_CauHois_DapAns">
+      <End Role="DapAns" EntitySet="DapAns" />
+      <End Role="CauHois" EntitySet="CauHois" />
+    </AssociationSet>
+    <AssociationSet Name="FK_CauHois_MucDoKhos" Association="Self.FK_CauHois_MucDoKhos">
+      <End Role="MucDoKhos" EntitySet="MucDoKhos" />
+      <End Role="CauHois" EntitySet="CauHois" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DeThi_ChiTiets_CauHois" Association="Self.FK_DeThi_ChiTiets_CauHois">
+      <End Role="CauHois" EntitySet="CauHois" />
+      <End Role="DeThi_ChiTiets" EntitySet="DeThi_ChiTiets" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Chuongs_MonHocs" Association="Self.FK_Chuongs_MonHocs">
+      <End Role="MonHocs" EntitySet="MonHocs" />
+      <End Role="Chuongs" EntitySet="Chuongs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Days_GiaoViens" Association="Self.FK_Days_GiaoViens">
+      <End Role="GiaoViens" EntitySet="GiaoViens" />
+      <End Role="Days" EntitySet="Days" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Days_Lops1" Association="Self.FK_Days_Lops1">
+      <End Role="Lops" EntitySet="Lops" />
+      <End Role="Days" EntitySet="Days" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Days_MonHocs" Association="Self.FK_Days_MonHocs">
+      <End Role="MonHocs" EntitySet="MonHocs" />
+      <End Role="Days" EntitySet="Days" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DeThi_ChiTiets_DeThis" Association="Self.FK_DeThi_ChiTiets_DeThis">
+      <End Role="DeThis" EntitySet="DeThis" />
+      <End Role="DeThi_ChiTiets" EntitySet="DeThi_ChiTiets" />
+    </AssociationSet>
+    <AssociationSet Name="FK_KetQuas_DeThi_ChiTiets" Association="Self.FK_KetQuas_DeThi_ChiTiets">
+      <End Role="DeThi_ChiTiets" EntitySet="DeThi_ChiTiets" />
+      <End Role="KetQuas" EntitySet="KetQuas" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DeThis_GiaoViens" Association="Self.FK_DeThis_GiaoViens">
+      <End Role="GiaoViens" EntitySet="GiaoViens" />
+      <End Role="DeThis" EntitySet="DeThis" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DeThis_MonHocs" Association="Self.FK_DeThis_MonHocs">
+      <End Role="MonHocs" EntitySet="MonHocs" />
+      <End Role="DeThis" EntitySet="DeThis" />
+    </AssociationSet>
+    <AssociationSet Name="FK_DeThis_NhomDeThis" Association="Self.FK_DeThis_NhomDeThis">
+      <End Role="NhomDeThis" EntitySet="NhomDeThis" />
+      <End Role="DeThis" EntitySet="DeThis" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MonHocs_GiaoViens" Association="Self.FK_MonHocs_GiaoViens">
+      <End Role="GiaoViens" EntitySet="GiaoViens" />
+      <End Role="MonHocs" EntitySet="MonHocs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Hocs_HocSinhs" Association="Self.FK_Hocs_HocSinhs">
+      <End Role="HocSinhs" EntitySet="HocSinhs" />
+      <End Role="Hocs" EntitySet="Hocs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Hocs_Lops" Association="Self.FK_Hocs_Lops">
+      <End Role="Lops" EntitySet="Lops" />
+      <End Role="Hocs" EntitySet="Hocs" />
+    </AssociationSet>
+    <AssociationSet Name="FK_KetQuas_ThanhViens" Association="Self.FK_KetQuas_ThanhViens">
+      <End Role="HocSinhs" EntitySet="HocSinhs" />
+      <End Role="KetQuas" EntitySet="KetQuas" />
+    </AssociationSet>
+    <AssociationSet Name="FK_Lops_Khois" Association="Self.FK_Lops_Khois">
+      <End Role="Khois" EntitySet="Khois" />
+      <End Role="Lops" EntitySet="Lops" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MonHocs_Khois" Association="Self.FK_MonHocs_Khois">
+      <End Role="Khois" EntitySet="Khois" />
+      <End Role="MonHocs" EntitySet="MonHocs" />
+    </AssociationSet>
+  </EntityContainer>
+</Schema>

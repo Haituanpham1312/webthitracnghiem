@@ -1,0 +1,358 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm lớp</button>
+    </div>
+    <div class="col-sm-4 col-sm-offset-6 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="...">
+    <ul class="pagination pagination-sm" id="phanTrang">  
+    </ul>
+</nav>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Tên lớp
+            </th>
+            <th>
+                Thẻ meta
+            </th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody id="tblDsLop"> </tbody>
+
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalLop">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idLop" value=""/>
+                    <div class="form-group">
+                        <label>Tên lớp</label>
+                        <input type="text" class="form-control" id="tenLop" placeholder="Tên lớp">
+                    </div>
+                    <div class="form-group">
+                        <label>Thẻ meta</label>
+                        <input type="text" class="form-control" id="meta" placeholder="Thẻ meta">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+@section scripts{
+
+    <script>
+        var tuKhoa = '';
+        var trang = 1;
+        $(document).ready(function () {
+            LoadDsLop(tuKhoa,trang);
+        });       
+
+        //sự kiện enter của text có id là txtSearch
+        $('#txtSearch').on('keypress', function (e) {
+            if (e.which == 13) {//nếu phím đc gõ là enter
+                $('#btnSearch').click();//thì gọi tới sự kiện click của button có id là btnSearch
+            }
+        });
+
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            LoadDsLop(tuKhoa, trang);
+        });
+
+
+        //sự kiện click của button tìm kiếm
+        $('#btnSearch').click(function () {
+            trang = 1;
+            tuKhoa = $('#txtSearch').val();
+            LoadDsLop(tuKhoa,trang);
+        });
+
+
+        //sự kiện nhập của text tên lớp
+        $('#tenLop').keyup(function () {
+            $('#meta').val(getMeta($(this).val()));
+        });
+
+        //hàm lấy chuỗi tiếng việt không dấu, được ngăn cách với nhau bằng dấu -
+        function getMeta(title) {
+            return title.toLowerCase().trim()//đưa hết về kiểu chữ thường và loại bỏ khoảng trống thừa đầu và cuối của chuỗi                    
+                    .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+                    .replace(/\ /g, '-').replace(/đ/g, "d")
+                    .replace(/đ/g, "d")
+                    .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+                    .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+                    .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ.+/g, "o")
+                    .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ.+/g, "e")
+                    .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+                    .replace(/\s+/g, '-')           // thay thế khoảng trắng bằng dấu - 
+                    .replace(/&/g, '-va-')         // thay thế kí tự & bằng -va-
+                    .replace(/[^\w\-]+/g, '')       // loại bỏ các khoảng trắng thừa
+                    .replace(/\-\-+/g, '-');         // thay thế các kí tự - liên tục bằng 1 kí tự -
+
+        }
+      
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let idLop = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa lớp học này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/admin/lop/XoaLop',
+                    type: 'post',
+                    data: {
+                        id:idLop
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDsLop(tuKhoa, trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        //sự kiện của button sửa trên từng dòng
+        $(document).on('click', "button[name='update']", function () {
+            let idLop = $(this).closest('tr').attr('id');
+            $.ajax({
+                url: '/admin/lop/ChiTiet',
+                type: 'get',
+                data: {
+                    id: idLop
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        //nếu lấy thông tin lớp thành công
+                        $('#tenLop').val(data.L.TenLop);
+                        $('#meta').val(data.L.Meta);
+
+                        //gán giá trị cho text hidden có id là idLop = id của tr được chọn
+                        $('#idLop').val(idLop);
+                        $('#modalTitle').text('Cập nhật thông tin lớp học');
+                        //không cho chỉnh sửa các giá trị
+                        $('#tenLop').prop('readonly', false);
+                        $('#meta').prop('readonly', false);
+
+                        //ẩn button xác nhận
+                        $('#btnSubmit').show();
+
+                        $('#modalLop').modal();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+        //sự kiện click button chi tiết của mỗi dòng table
+        $(document).on('click', "button[name='view']", function () {
+            let idLop = $(this).closest('tr').attr('id');
+            $.ajax({
+                url: '/admin/lop/ChiTiet',
+                type: 'get',
+                data: {
+                    id: idLop
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        //nếu lấy thông tin lớp thành công
+                        $('#tenLop').val(data.L.TenLop);
+                        $('#meta').val(data.L.Meta);
+
+                        //không cho chỉnh sửa các giá trị
+                        $('#tenLop').prop('readonly', true);
+                        $('#meta').prop('readonly', true);
+
+                        $('#modalTitle').text('Thông tin chi tiết lớp học');
+
+                        //ẩn button xác nhận
+                        $('#btnSubmit').hide();
+
+                        $('#modalLop').modal();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+        //sự kiện click button xác nhận
+        $('#btnSubmit').click(function () {
+            let tenLop = $('#tenLop').val().trim();
+            let meta = $('#meta').val().trim();
+
+            //ràng buộc dữ liệu
+            if (tenLop.length == 0 || meta.length == 0) {
+                alert('Vui lòng nhập đầy đủ dữ liệu để tiếp tục');
+                return;
+            }
+            let idLop = $('#idLop').val().trim();
+
+            if (idLop.length == 0) {//nếu là thêm mới lớp học
+                //dùng ajax để thêm mới 1 lớp học
+                $.ajax({
+                    url: '/admin/lop/AddLop',
+                    type: 'post',
+                    data: {
+                        tenLop: tenLop,
+                        meta: meta
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDsLop(tuKhoa, trang);
+                            $('#tenLop').val('');
+                            $('#meta').val('');
+                        } else {
+                            alert(data.msg);
+                        }
+
+                    }
+                });
+            } else {//nếu là cập nhật 1 lớp đã có
+                //dùng ajax để cập nhật lớp
+
+                $.ajax({
+                    url: '/admin/lop/CapNhat',
+                    type: 'post',
+                    data: {
+                        id: idLop,
+                        tenLop: tenLop,
+                        meta: meta
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            //cập nhật thành công
+                            alert(data.msg);
+                            $('#modalLop').modal('hide');//đóng modal
+
+                            //load lại danh sách lớp sau khi cập nhật
+                            LoadDsLop(tuKhoa,trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+                
+            }
+           
+        });
+
+
+        //sự kiện click của button thêm mới lớp
+        $('#btnAdd').click(function () {
+            //set header của modal lớp
+            $('#modalTitle').text('Thêm mới lớp học');
+
+            //set giá trị mặc định cho các thành phần của form
+            $('#idLop').val('');
+            $('#tenLop').val('');
+            $('#meta').val('');
+
+            //không cho chỉnh sửa các giá trị
+            $('#tenLop').prop('readonly', false);
+            $('#meta').prop('readonly', false);
+
+            //ẩn button xác nhận
+            $('#btnSubmit').show();
+
+            //hiển thị modal lên
+            $('#modalLop').modal();
+        })
+
+
+        //hàm load danh sách lớp đổ vào table
+        function LoadDsLop(search,trang) {
+            //dùng ajax để load danh sách lớp trong controller lop
+            $.ajax({
+                url: '/admin/lop/DsLop',
+                type: 'get',
+                data:{
+                    tuKhoa: search,
+                    trang: trang
+                },
+                success: function (data) {
+                    //console.log(data);
+                    if (data.code == 200) {
+                        $('#tblDsLop').empty();
+                        $.each(data.dsLop, function (k, v) {
+                            let tr = '<tr id="' + v.Id + '">'
+                            tr += '<td class = "col-sm-5">' + v.TenLop + '</td>';
+                            tr += '<td class = "col-sm-5">' + v.Meta + '</td>';
+                            tr += '<td class = "col-sm-2 text-right">';
+                            tr += '<button class = "btn btn-xs btn-info" name = "view"><i class="fa fa-info-circle" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                            tr += '</td>';
+                            tr += '</tr>';
+                            $('#tblDsLop').append(tr);
+                        });
+
+                        //phân trang
+                      
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="'+i+'"><a class="page-link" href="#">'+i+'</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');                           
+                       
+                    }
+                }
+            });
+        }
+    </script>
+
+
+
+}
+

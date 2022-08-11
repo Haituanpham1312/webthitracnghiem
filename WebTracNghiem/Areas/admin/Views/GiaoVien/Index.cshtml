@@ -1,0 +1,380 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm mới Gv</button>
+    </div>
+    <div class="col-sm-4 col-sm-offset-6 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="...">
+    <ul class="pagination pagination-sm" id="phanTrang"></ul>
+</nav>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Mã giáo viên
+            </th>
+            <th>
+                Họ tên
+            </th>
+            <th>
+                Điện thoại
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                TBM
+            </th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody id="tblDsGv"> </tbody>
+
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalGv">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idGv" value="" />
+                    <div class="form-group">
+                        <label>Mã giáo viên(<span class="text-danger">*</span>)</label>
+                        <input type="text" class="form-control" id="maGiaoVien" placeholder="Mã giáo viên">
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu(<span class="text-danger">*</span>)</label>
+                        <input type="password" class="form-control" id="matKHau" placeholder="Mật khẩu">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Họ & tên(<span class="text-danger">*</span>)</label>
+                        <input type="text" class="form-control" id="hoTen" placeholder="Họ và tên giáo viên">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Điện thoại</label>
+                        <input type="text" class="form-control" id="dienThoai" placeholder="Điện thoại">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Email của giáo viên">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ</label>
+                        <input type="text" class="form-control" id="diaChi" placeholder="Địa chỉ">
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="truongBm">
+                        <label class="form-check-label">Trưởng bộ môn</label>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var tuKhoa = '';
+        var trang = 1;
+        $(document).ready(function () {
+            selectGiaoVien(tuKhoa, trang);
+        });
+
+        //sự kiện enter của text có id là txtSearch
+        $('#txtSearch').on('keypress', function (e) {
+            if (e.which == 13) {//nếu phím đc gõ là enter
+                $('#btnSearch').click();//thì gọi tới sự kiện click của button có id là btnSearch
+            }
+        });
+
+        //sự kiện click của button tìm kiếm
+        $('#btnSearch').click(function () {
+            trang = 1;
+            tuKhoa = $('#txtSearch').val();
+            selectGiaoVien(tuKhoa, trang);
+        });
+
+
+
+        //sự kiện của button xác nhận
+        $('#btnSubmit').click(function () {
+            let idGv = $('#idGv').val().trim();
+            let maGiaoVien = $('#maGiaoVien').val().trim();
+            let matKhau = $('#matKHau').val().trim();
+            let hoTen = $('#hoTen').val().trim();
+            let dienThoai = $('#dienThoai').val().trim();
+            let email = $('#email').val().trim();
+            let diaChi = $('#diaChi').val().trim();
+            let truongBm = $('#truongBm').is(':checked');
+
+            //ràng buộc dữ liệu
+            if (maGiaoVien.length == 0 || matKhau.length == 0 || hoTen.length == 0) {
+                alert('Vui lòng nhập đầy đủ thông tin ở các trường có dấu *');
+                return;
+            }
+
+            if (idGv.length == 0) {//trường hợp thêm mới giáo viên
+                $.ajax({
+                    url: '/admin/giaovien/AddGv',
+                    type: 'post',
+                    data: {
+                        maGv: maGiaoVien,
+                        matKhau: matKhau,
+                        hoTen: hoTen,
+                        soDienThoai: dienThoai,
+                        email: email,
+                        diaChi: diaChi,
+                        laTruongBM: truongBm == true ? 1 : 0
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            selectGiaoVien(tuKhoa, trang);
+                            $('#maGiaoVien').val('');
+                            $('#matKHau').val('');
+                            $('#hoTen').val('');
+                            $('#dienThoai').val('');
+                            $('#email').val('');
+                            $('#diaChi').val('');
+                            $('#truongBm').prop('checked', false);
+                        }
+                    }
+                });
+            } else {//trường hợp cập nhật giáo viên
+                $.ajax({
+                    url: '/admin/giaovien/EditGv',
+                    type: 'post',
+                    data: {
+                        id:idGv,
+                        maGv: maGiaoVien,
+                        matKhau: matKhau,
+                        hoTen: hoTen,
+                        soDienThoai: dienThoai,
+                        email: email,
+                        diaChi: diaChi,
+                        laTruongBM: truongBm == true ? 1 : 0
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            selectGiaoVien(tuKhoa, trang);
+                            $('#modalGv').modal('hide');
+                        }
+                    }
+                })
+            }
+
+
+
+        });
+
+
+        //sự kiện click của button thêm mới giáo viên
+        $('#btnAdd').click(function () {
+            //set header của modal lớp
+            $('#modalTitle').text('Thêm mới giáo viên');
+
+            //set giá trị mặc định cho các thành phần của form
+            $('#idGv').val('');
+            $('#maGiaoVien').val('');
+            $('#matKHau').val('');
+            $('#hoTen').val('');
+            $('#dienThoai').val('');
+            $('#email').val('');
+            $('#diaChi').val('');
+            $('#truongBm').prop('checked', false);
+
+
+            $('#maGiaoVien').prop('readonly', false);
+            $('#matKHau').prop('readonly', false);
+            $('#hoTen').prop('readonly', false);
+            $('#dienThoai').prop('readonly', false);
+            $('#email').prop('readonly', false);
+            $('#diaChi').prop('readonly', false);
+            $('#truongBm').prop('readonly', false);
+
+            //ẩn button xác nhận
+            $('#btnSubmit').show();
+
+            //hiển thị modal lên
+            $('#modalGv').modal();
+        })
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            selectGiaoVien(tuKhoa, trang);
+        });
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let id = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa giáo viên này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/admin/giaovien/DeleteGv',
+                    type: 'post',
+                    data: {
+                        id: id
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            selectGiaoVien(tuKhoa, trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        $(document).on('click', "button[name='update']", function () {
+            let id = $(this).closest('tr').attr('id');
+            $('#idGv').val(id);//gán vào giá trị cho thằng textbox hidden có giá trị để đánh dấu là trường hợp cập nhật
+            getGv(id);
+            $('#modalGv').modal();
+
+            //set header của modal lớp
+            $('#modalTitle').text('Cập nhật thông tin của giáo viên');
+
+            $('#maGiaoVien').prop('readonly', false);
+            $('#matKHau').prop('readonly', false);
+            $('#hoTen').prop('readonly', false);
+            $('#dienThoai').prop('readonly', false);
+            $('#email').prop('readonly', false);
+            $('#diaChi').prop('readonly', false);
+            $('#truongBm').prop('readonly', false);
+
+            ////ẩn button xác nhận
+            $('#btnSubmit').show();
+        });
+
+        //sự kiện click button chi tiết của mỗi dòng table
+        $(document).on('click', "button[name='view']", function () {
+            let id = $(this).closest('tr').attr('id');
+            getGv(id);
+            $('#modalGv').modal();
+
+            //set header của modal lớp
+            $('#modalTitle').text('Thông tin chi tiết của giáo viên');
+
+            $('#maGiaoVien').prop('readonly', true);
+            $('#matKHau').prop('readonly', true);
+            $('#hoTen').prop('readonly', true);
+            $('#dienThoai').prop('readonly', true);
+            $('#email').prop('readonly', true);
+            $('#diaChi').prop('readonly', true);
+            $('#truongBm').prop('readonly', true);
+
+            ////ẩn button xác nhận
+            $('#btnSubmit').hide();
+        });
+
+        function getGv(id) {
+            $.ajax({
+                url: '/admin/giaovien/LayGV',
+                type: 'get',
+                data: {
+                    id: id
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        console.log(data);
+                        //set giá trị mặc định cho các thành phần của form
+                        $('#maGiaoVien').val(data.gv.MaGiaoVien);
+                        $('#matKHau').val(data.gv.MatKhau);
+                        $('#hoTen').val(data.gv.HoTen);
+                        $('#dienThoai').val(data.gv.SoDienThoai);
+                        $('#email').val(data.gv.Email);
+                        $('#diaChi').val(data.gv.DiaChi);
+                        $('#truongBm').prop('checked', data.gv.LaTruongBM==1?true:false);
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        //hàm load danh sách lớp đổ vào table
+        function selectGiaoVien(search, trang) {
+            //dùng ajax để load danh sách lớp trong controller lop
+            $.ajax({
+                url: '/admin/giaovien/SelectGiaoVien',
+                type: 'get',
+                data: {
+                    tuKhoa: search,
+                    trang: trang
+                },
+                success: function (data) {
+                    //console.log(data);
+                    if (data.code == 200) {
+                        $('#tblDsGv').empty();
+                        $.each(data.dsGv, function (k, v) {
+                            let tr = '<tr id="' + v.Id + '">'
+                            tr += '<td class = "col-sm-2">' + v.MaGv + '</td>';
+                            tr += '<td class = "col-sm-2">' + v.HoTen + '</td>';
+                            tr += '<td class = "col-sm-2">' + (v.SoDienThoai == null ? '' : v.SoDienThoai) + '</td>';
+                            tr += '<td class = "col-sm-3">' + (v.Email == null ? '' : v.Email) + '</td>';
+                            tr += '<td class = "col-sm-1">' + (v.TruongBM == 1 ? '<i class="fa fa-check text-success" aria-hidden="true"></i>' : '') + '</td>';
+                            tr += '<td class = "col-sm-2 text-right">';
+                            tr += '<button class = "btn btn-xs btn-info" name = "view"><i class="fa fa-info-circle" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                            tr += '</td>';
+                            tr += '</tr>';
+                            $('#tblDsGv').append(tr);
+                        });
+
+                        //phân trang
+
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+
+                    }
+                }
+            });
+        }
+    </script>
+}
+

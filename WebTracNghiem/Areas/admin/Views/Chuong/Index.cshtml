@@ -1,0 +1,320 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="row">
+
+    <div class="col-sm-2 text-right">
+        <label style="margin-top:8px;">Khối:</label>
+    </div>
+    <div class="col-sm-2">
+        <div>
+            <select class="form-control" id="selectKhoi"></select>
+        </div>
+    </div>
+
+
+    <div class="col-sm-2 text-right">
+        <label style="margin-top:8px;">Môn học</label>
+    </div>
+    <div class="col-sm-2">     
+        <div>  
+            <select class="form-control" id="selectMon"></select>
+        </div>
+    </div>
+
+    <div class="col-sm-offset-1 col-sm-3">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm chuơng mới</button>
+    </div>
+</div>
+
+@*table hiển thị danh sách chương*@
+<table class="table" style="margin-top: 30px;">
+    <thead>
+        <tr>
+            <th>
+               STT
+            </th>
+            <th>
+                Tên chương
+            </th>
+            <th>
+                Meta
+            </th>           
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody id="tblChuong"> </tbody>
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalChuong">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idMonHoc" value="" />
+                    <div class="form-group">
+                        <label>Tên chuong</label>
+                        <input type="text" class="form-control" id="tenChuong" placeholder="Tên chương">
+                    </div>
+                    <div class="form-group">
+                        <label>Thẻ meta</label>
+                        <input type="text" class="form-control" id="metaChuong" placeholder="Thẻ meta">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+   <script>
+
+       var idChuong = "";
+
+       $(document).ready(function(){
+           LoadDsKhoi();
+
+       });
+
+       function LoadDsKhoi() {
+           $.ajax({
+               url: '/admin/khoi/AllKhoi',
+               type: 'get',
+               success: function (data) {
+                   if (data.code == 200) {
+                       $('#selectKhoi').empty();
+                       data.allKhoi.forEach(k=>{
+                           let option = '<option value="' + k.Id + '">' + k.TenKhoi + '</option>';
+                           $('#selectKhoi').append(option);
+                       })
+                       LoadDsMh();
+                       
+                   }
+               }
+           })
+       }
+
+
+
+
+
+
+
+       //sự kiện xóa chương
+       $(document).on('click', "button[name='delete']", function () {
+           let id = $(this).closest('tr').attr('id');
+           if (confirm("Bạn thực sự muốn xóa chương này?")) {
+               //dùng ajax để xóa lớp đc chọn
+               $.ajax({
+                   url: '/admin/chuong/Delete',
+                   type: 'post',
+                   data: {
+                       id: id
+                   },
+                   success: function (data) {
+                       if (data.code == 200) {
+                           alert(data.msg);
+                           LoadDsChuong();//load lại ds chương sau khi xóa
+                       } else {
+                           alert(data.msg);
+                       }
+                   }
+               })
+           }
+       });
+
+
+
+       $("#modalChuong").on('hide.bs.modal', function () {
+           idChuong = "";
+           $('#tenChuong').val('');
+           $('#metaChuong').val('');
+       });
+
+
+       //sự kiện của button sửa trên từng dòng
+       $(document).on('click', "button[name='update']", function () {
+
+           let id = $(this).closest('tr').attr('id');
+           idChuong = id;
+
+           $.ajax({
+               url: '/admin/chuong/detail',
+               type: 'get',
+               data: {
+                   id: id
+               },
+               success: function (data) {
+                   $('#tenChuong').val(data.chuong.TenChuong);
+                   $('#metaChuong').val(data.chuong.Meta);
+                   $('#modalChuong').modal();
+               }
+           })
+          
+           $('#modalMonHoc').modal();
+       });
+
+
+       $('#btnAdd').click(function () {
+           $('#modalChuong').modal();
+       })
+
+       $('#btnSubmit').click(function () {
+           let tenChuong = $('#tenChuong').val();
+           let metaChuong = $('#metaChuong').val();
+           let idMh = $('#selectMon option:selected').val();
+
+           if (tenChuong.trim().length == 0 || metaChuong.trim().length == 0) {
+               alert("Vui lòng nhập dữ liệu đầy đủ");
+               return;
+           }
+
+
+           if (idChuong.trim().length == 0) {
+               //trường hợp thêm mới chương
+               $.ajax({
+                   url: '/admin/chuong/add',
+                   type: 'post',
+                   data: {
+                       tenChuong: tenChuong,
+                       meta: metaChuong,
+                       idMh: idMh
+                   },
+                   success: function (data) {
+                       if (data.code == 201) {
+                           alert(data.msg);
+                           LoadDsChuong();
+                           $('#tenChuong').val('');
+                           $('#metaChuong').val('');
+                       }
+                   }
+               })
+
+           } else {
+               //trường hợp cập nhật chương
+               $.ajax({
+                   url: '/admin/chuong/edit',
+                   type: 'post',
+                   data: {
+                       id: idChuong,
+                       tenChuong: tenChuong,
+                       meta:metaChuong
+                   },
+                   success: function (data) {
+                       if (data.code == 200) {
+                           alert(data.msg);
+                           LoadDsChuong();
+                           $('#modalChuong').modal('hide');
+                       }
+                   }
+               })
+           }
+       })
+
+       $("#selectKhoi").change(function () {
+           LoadDsMh();
+       });
+
+       $("#selectMon").change(function () {
+           LoadDsChuong();
+       });
+
+
+       //sự kiện nhập của text tên môn học
+       $('#tenChuong').keyup(function () {
+           $('#metaChuong').val(getMeta($(this).val()));
+       });
+
+
+
+
+
+
+       function LoadDsMh()
+       {
+           $.ajax({
+               url: '/admin/monhoc/GetListByKhoiId',
+               type: 'get',
+               data:{
+                   idKhoi: $('#selectKhoi option:selected').val()
+               },
+               success: function (data) {
+                  
+                   if (data.code == 200) {
+                       $('#selectMon').empty();
+                       data.allMh.forEach(m=> {                          
+                           let option = '<option value="' + m.Id + '">' + m.TenMh + '</option>';
+                           $('#selectMon').append(option);
+                       })
+                       LoadDsChuong();
+                   }
+               }
+           })
+       }
+
+       function LoadDsChuong() {
+           if ($('#selectMon option:selected').val() == null) {
+               $('#tblChuong').empty();
+               return;
+           }
+          $.ajax({
+              url: '/admin/chuong/get',
+              type: 'get',
+              data: {
+                  idMh: parseInt($('#selectMon option:selected').val())
+              },
+              success: function (data) {
+                  if (data.code == 200) {
+                      $('#tblChuong').empty();
+                      let idx = 1;
+                      data.chuongs.forEach(c=> {
+                          let tr = '<tr id="'+c.Id+'">';
+                          tr += '<td>' + (idx++) + '</td>';
+                          tr += '<td>' + c.TenChuong + '</td>';
+                          tr += '<td>' + c.Meta + '</td>';
+
+                          tr += '<td class = "col-sm-2 text-right">';                        
+                          tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                          tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                          tr += '</td>';
+                          tr += '</tr>';
+                          $('#tblChuong').append(tr);
+                      })
+                  }
+              }
+          })
+       }
+
+
+
+       //hàm lấy chuỗi tiếng việt không dấu, được ngăn cách với nhau bằng dấu -
+       function getMeta(title) {
+           return title.toLowerCase().trim()//đưa hết về kiểu chữ thường và loại bỏ khoảng trống thừa đầu và cuối của chuỗi                    
+                   .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+                   .replace(/\ /g, '-').replace(/đ/g, "d")
+                   .replace(/đ/g, "d")
+                   .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+                   .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+                   .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ.+/g, "o")
+                   .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ.+/g, "e")
+                   .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+                   .replace(/\s+/g, '-')           // thay thế khoảng trắng bằng dấu - 
+                   .replace(/&/g, '-va-')         // thay thế kí tự & bằng -va-
+                   .replace(/[^\w\-]+/g, '')       // loại bỏ các khoảng trắng thừa
+                   .replace(/\-\-+/g, '-');         // thay thế các kí tự - liên tục bằng 1 kí tự -
+
+       }
+
+    </script>
+}
+

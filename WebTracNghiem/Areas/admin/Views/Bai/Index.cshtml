@@ -1,0 +1,412 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+
+    <div class="col-sm-1">
+        <label style="margin-top:8px;">Khối:</label>
+    </div>
+    <div class="col-sm-2">
+        <div>
+            <select class="form-control" id="selectKhoi"></select>
+        </div>
+    </div>
+
+
+    <div class="col-sm-1 text-right">
+        <label style="margin-top:8px;">Môn học:</label>
+    </div>
+    <div class="col-sm-2">
+        <div>
+            <select class="form-control" id="selectMon"></select>
+        </div>
+    </div>
+
+    <div class="col-sm-1 text-right">
+        <label style="margin-top:8px;">Chương:</label>
+    </div>
+    <div class="col-sm-5">
+        <div>
+            <select class="form-control" id="selectChuong"></select>
+        </div>
+    </div>   
+</div>
+
+
+
+<div class="row" style="margin-top:30px;">
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm bài học</button>
+    </div>
+    
+    <div class="col-sm-4 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" style="margin-top: 30px;">
+    <div class="col-sm-12">
+        <nav aria-label="...">
+            <ul class="pagination pagination-sm" id="phanTrang"></ul>
+        </nav>
+    </div>
+</div>
+
+
+
+
+
+
+@*table hiển thị danh sách bài*@
+<table class="table" >
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                Chương
+            </th>
+            <th>
+                Tên Bài
+            </th>
+            <th>
+                Meta
+            </th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody id="tblBai"> </tbody>
+</table>
+
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalBai">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idLop" value="" />
+                    <div class="form-group">
+                        <label>Tên bài</label>
+                        <input type="text" class="form-control" id="tenBai" placeholder="Tên bài">
+                    </div>
+                    <div class="form-group">
+                        <label>Thẻ meta</label>
+                        <input type="text" class="form-control" id="meta" placeholder="Thẻ meta">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+
+        var idBai = "";
+        var trang = 1;
+        var tuKhoa = "";
+
+        $(document).ready(function () {
+            LoadDsKhoi();          
+        })
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            LoadDsBai();
+        });
+
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            LoadDsBai();
+        });
+
+        $('#btnSearch').click(function () {
+            tuKhoa = $('#txtSearch').val();
+            LoadDsBai();
+        })
+
+
+        $('#btnSubmit').click(function () {
+            let tenBai = $('#tenBai').val();
+            let meta = $('#meta').val();
+            let idChuong = $('#selectChuong option:selected').val();
+
+            //rang buoc du lieu
+            if (tenBai.length == 0 || meta.length == 0 || idChuong == null) {
+                alert('Dữ liệu không hợp lệ!');
+                return;//không thực hiện các câu lệnh phía dưới
+            }
+
+
+            if (idBai.trim().length == 0) {
+                //truong hop them moi bai hoc
+                $.ajax({
+                    url: '/admin/bai/add',
+                    type: 'post',
+                    data: {
+                        tenBai,
+                        meta,
+                        idChuong                           
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDsBai();
+                            $('#tenBai').val('');
+                            $('#meta').val('');
+                        }
+                    }
+                    
+                })
+
+            } else {
+                //truong hop cap nhat bai hoc
+                $.ajax({
+                    url: '/admin/bai/edit',
+                    type: 'post',
+                    data: {
+                        id: idBai,
+                        tenBai: tenBai,
+                        meta: meta,
+                        idChuong: idChuong
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDsBai();
+                            $('#tenBai').val('');
+                            $('#meta').val('');
+                            $('#modalBai').modal('hide');
+                            idBai = "";
+                        }
+                    }
+                })
+            }
+        })
+
+        $('#btnAdd').click(function () {
+            idBai = "";
+            $('#modalBai').modal();
+        })
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let idBai = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa bài học này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/admin/bai/delete',
+                    type: 'post',
+                    data: {
+                        id: idBai
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDsBai();
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        //sự kiện của button sửa trên từng dòng
+        $(document).on('click', "button[name='update']", function () {
+            idBai = $(this).closest('tr').attr('id');
+            
+            $.ajax({
+                url: '/admin/bai/detail',
+                type: 'get',
+                data: {
+                    id: idBai
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                       
+                        //nếu lấy thông tin lớp thành công
+                        $('#tenBai').val(data.b.TenBai);
+                        $('#meta').val(data.b.Meta);
+                        $('#selectChuong').val(data.b.IdChuong);
+
+                        $('#modalTitle').text('Cập nhật thông tin bài học');                       
+
+                        $('#modalBai').modal();
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        });
+
+
+
+
+
+
+        function LoadDsBai() {
+            $.ajax({
+                url: '/admin/bai/list',
+                type: 'get',
+                data: {
+                    tuKhoa: tuKhoa,
+                    trang: trang,
+                    idMh:$('#selectMon option:selected').val()
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#tblBai').empty();
+                        let idx = 1;
+                       
+                        data.dsBh.forEach(m=> {
+                            let tr = '<tr id="'+m.Id+'">';
+                            tr += '<td>' + (idx++) + '</td>';
+                            tr += '<td  class="font-weight-bold text-info">' + m.Chuong + '</td>';
+                            tr += '<td>' + m.TenBai + '</td>';
+                            tr += '<td>' + m.Meta + '</td>';
+                            tr += '<td class = "text-right text-nowrap">';                            
+                            tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                            tr += '</td>';
+                            tr += '</tr>';
+
+                            $('#tblBai').append(tr);
+                        })
+
+                        //phân trang
+
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+                    }
+                }
+            })
+        }
+        function LoadDsKhoi() {
+            $.ajax({
+                url: '/admin/khoi/AllKhoi',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#selectKhoi').empty();
+                        data.allKhoi.forEach(k=> {
+                            let option = '<option value="' + k.Id + '">' + k.TenKhoi + '</option>';
+                            $('#selectKhoi').append(option);
+                        })
+                        LoadDsMh();
+
+                    }
+                }
+            })
+        }
+        function LoadDsMh() {
+            $.ajax({
+                url: '/admin/monhoc/GetListByKhoiId',
+                type: 'get',
+                data: {
+                    idKhoi: $('#selectKhoi option:selected').val()
+                },
+                success: function (data) {
+
+                    if (data.code == 200) {
+                        $('#selectMon').empty();
+                        data.allMh.forEach(m=> {
+                            let option = '<option value="' + m.Id + '">' + m.TenMh + '</option>';
+                            $('#selectMon').append(option);
+                        })
+                        LoadDsChuong();
+                        LoadDsBai();
+                    }
+                }
+            })
+        }
+        function LoadDsChuong() {
+            if ($('#selectMon option:selected').val() == null) {               
+                return;
+            }
+            $.ajax({
+                url: '/admin/chuong/get',
+                type: 'get',
+                data: {
+                    idMh: parseInt($('#selectMon option:selected').val())
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#selectChuong').empty();
+                        let idx = 1;
+                        data.chuongs.forEach(c=> {
+                            let option = '<option value = "' + c.Id + '">' + c.TenChuong + '</option>';                           
+                            $('#selectChuong').append(option);
+                        })
+                    }
+                }
+            })
+        }
+
+        $("#selectKhoi").change(function () {
+            LoadDsMh();
+        });
+
+        $("#selectMon").change(function () {
+            LoadDsChuong();
+            LoadDsBai();
+        });
+
+
+
+        //sự kiện nhập của text tên lớp
+        $('#tenBai').keyup(function () {
+            $('#meta').val(getMeta($(this).val()));
+        });
+
+        //hàm lấy chuỗi tiếng việt không dấu, được ngăn cách với nhau bằng dấu -
+        function getMeta(title) {
+            return title.toLowerCase().trim()//đưa hết về kiểu chữ thường và loại bỏ khoảng trống thừa đầu và cuối của chuỗi                    
+                    .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+                    .replace(/\ /g, '-').replace(/đ/g, "d")
+                    .replace(/đ/g, "d")
+                    .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+                    .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+                    .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ.+/g, "o")
+                    .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ.+/g, "e")
+                    .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+                    .replace(/\s+/g, '-')           // thay thế khoảng trắng bằng dấu - 
+                    .replace(/&/g, '-va-')         // thay thế kí tự & bằng -va-
+                    .replace(/[^\w\-]+/g, '')       // loại bỏ các khoảng trắng thừa
+                    .replace(/\-\-+/g, '-');         // thay thế các kí tự - liên tục bằng 1 kí tự -
+
+        }
+
+    </script>
+
+}

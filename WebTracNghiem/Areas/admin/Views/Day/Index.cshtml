@@ -1,0 +1,416 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@*div có class là row gồm button thêm mới và form tìm kiếm*@
+<div class="row">
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm quá trình giảng dạy</button>
+    </div>
+    <div class="col-sm-4 col-sm-offset-6 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*phần phân trang*@
+<nav aria-label="...">
+    <ul class="pagination pagination-sm" id="phanTrang"></ul>
+</nav>
+
+@*table hiển thị danh sách môn học*@
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Giáo viên
+            </th>
+            <th>
+                Lớp
+            </th>
+            <th>
+                Môn học
+            </th>
+            <th>
+                Từ ngày
+            </th>
+            <th>
+                Tới ngày
+            </th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody id="tblGiangDay"> </tbody>
+
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalGiangDay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idGiangDay" value="" />
+                    <div class="form-group">
+                        <label>Lớp</label>
+                        <select class="form-control" id="selectLop"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Môn học</label>
+                        <select class="form-control" id="selectMon"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Giáo viên</label>
+                        <select class="form-control" id="selectGiaoVien"></select>
+                    </div>
+
+                   <div class="row">
+                       <div class="col-sm-6">
+                           <div class="form-group">
+                               <label>Từ ngày</label>
+                               <div class="input-group date" data-provide="datepicker">
+                                   <input type="text" class="form-control" id="tuNgay">
+                                   <div class="input-group-addon">
+                                       <span class="glyphicon glyphicon-th"></span>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+
+                       <div class="col-sm-6">
+                           <div class="form-group">
+                               <label>Tới ngày</label>
+                               <div class="input-group date" data-provide="datepicker">
+                                   <input type="text" class="form-control" id="toiNgay">
+                                   <div class="input-group-addon">
+                                       <span class="glyphicon glyphicon-th"></span>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+
+                   
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+<link href="~/Content/datepicker/css/bootstrap-datepicker.css" rel="stylesheet" />
+<script src="~/Content/datepicker/js/bootstrap-datepicker.js"></script>
+    <script>
+        var tuKhoa = '';
+        var trang = 1;
+        $(document).ready(function () {
+            //đổ dữ liệu cho dropdown lớp học
+            loadDsLop();
+            //đổ dữ liệu cho dropdown giáo viên
+            loadDsGv();
+
+            //đổ dữ liệu cho dropdown môn học
+            loadDsMh();
+
+            //hiển thị danh sách giảng dạy
+            LoadDsGiangDay(tuKhoa, trang);
+        });
+
+        //sự kiện enter của text có id là txtSearch
+        $('#txtSearch').on('keypress', function (e) {
+            if (e.which == 13) {//nếu phím đc gõ là enter
+                $('#btnSearch').click();//thì gọi tới sự kiện click của button có id là btnSearch
+            }
+        });
+        //sự kiện click của button tìm kiếm
+        $('#btnSearch').click(function () {
+            trang = 1;
+            tuKhoa = $('#txtSearch').val();
+            LoadDsGiangDay(tuKhoa, trang);
+        });
+
+
+        //sự kiện click của button xác nhận
+        $('#btnSubmit').click(function () {
+            let idLop = $('#selectLop').val();//lấy id của lớp được chọn
+            let idMonhoc = $('#selectMon').val();//lấy id của môn học đc chọn
+            let idGiaovien = $('#selectGiaoVien').val();//lấy id của giáo viên được chọn
+            let tuNgay = $('#tuNgay').val().trim();//lấy thời gian bắt đầu
+            let toiNgay = $('#toiNgay').val().trim();//lấy thời gian kết thuc
+
+            //ràng buộc dữ liệu ... từ từ tính sau
+            if (tuNgay.length == 0 || toiNgay.length == 0) {
+                alert('Vui lòng nhập đầy đủ thời gian giảng dạy');
+                return;//dừng ngay đây và không thực hiện các câu lệnh phía dưới
+            }
+
+            let frD = new Date(tuNgay);
+            let tD = new Date(toiNgay);
+            if (frD >= tD) {
+                alert('Thời gian giảng dạy không hợp lệ');
+                return;
+            }
+
+            let idGiangDay = $('#idGiangDay').val().trim();
+            if (idGiangDay.length == 0) {//trường hợp thêm mới quá trình giảng dạy
+                $.ajax({
+                    url: '/admin/day/AddDay',
+                    type: 'post',
+                    data: {
+                        maLop:idLop,
+                        maGv: idGiaovien,
+                        maMh: idMonhoc,
+                        tuNgay: tuNgay,
+                        toiNgay: toiNgay
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+
+                            $('#tuNgay').val('');
+                            $('#toiNgay').val('');
+                            LoadDsGiangDay(tuKhoa, trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+            } else {//cập nhật quá trình giảng dạy
+                $.ajax({
+                    url: '/admin/day/EditDay',
+                    type: 'post',
+                    data: {
+                        id: idGiangDay,
+                        maLop: idLop,
+                        maGv: idGiaovien,
+                        maMh: idMonhoc,
+                        tuNgay: tuNgay,
+                        toiNgay: toiNgay
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            $('#modalGiangDay').modal('hide');
+                            LoadDsGiangDay(tuKhoa, trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+            }
+
+            
+        });
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            //hiển thị danh sách giảng dạy
+            LoadDsGiangDay(tuKhoa, trang);
+        });
+
+        //sự kiện của button sửa trên từng dòng
+        $(document).on('click', "button[name='update']", function () {
+            let id = $(this).closest('tr').attr('id');
+
+            //set value cho input text có id idMonHoc để xác định là trường hợp cập nhật
+            $('#idGiangDay').val(id);
+            //set label cho header
+            $('#modalTitle').text('Cập nhật quá trình giảng dạy');
+
+            $.ajax({
+                url: '/admin/day/Detail',
+                type: 'get',
+                data: {
+                    id:id
+                },
+                success: function (data) {
+                    //set value đc chọn cho select lop          
+                    $('#selectLop').val(data.d.IdLop);
+
+                    //set value đc chọn cho select giaovien          
+                    $('#selectGiaoVien').val(data.d.IdGv);
+
+                    //set value đc chọn cho select môn học          
+                    $('#selectMon').val(data.d.IdMh);
+
+                    //lấy thời gian và set cho input từ ngày và tới ngày
+
+                    $('#tuNgay').val(data.d.TuNgay);
+
+                    $('#toiNgay').val(data.d.ToiNgay);
+
+                    $('#modalGiangDay').modal();
+                }
+            })
+
+
+
+           
+        });
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let id = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa quá trình giảng dạy này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/admin/day/deleteday',
+                    type: 'post',
+                    data: {
+                        id: id
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            //hiển thị danh sách giảng dạy
+                            LoadDsGiangDay(tuKhoa, trang);
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        //hàm hiển thị danh sách giảng dạy
+        function LoadDsGiangDay(tuKhoa, trang) {
+            $.ajax({
+                url: '/admin/day/List',
+                type: 'get',
+                data: {
+                    tuKhoa: tuKhoa,
+                    trang:trang
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#tblGiangDay').empty();
+                        $.each(data.dsLop, function (k, v) {
+                            let tr = '<tr id="' + v.Id + '">'
+                            tr += '<td class = "col-sm-2">' + v.TenGv + '</td>';                           
+                            tr += '<td class = "col-sm-4">' + v.TenLop + '</td>';
+                            tr += '<td class = "col-sm-4" >' + v.TenMh + '</td>';
+                            tr += '<td class = "col-sm-2 tungay">' +v.TuNgay + '</td>';
+                            tr += '<td class = "col-sm-2 toingay">' + v.ToiNgay + '</td>';
+                            tr += '<td class = "col-sm-2 text-right text-nowrap">';
+                            tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                            tr += '</td>';
+                            tr += '</tr>';
+                            $('#tblGiangDay').append(tr);
+                        });
+
+                        //phân trang                      
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+
+
+        $.fn.datepicker.defaults.format = "dd/mm/yyyy";
+        $('.datepicker').datepicker();
+
+        //sự kiện của button thêm quá trình giảng dạy
+        $('#btnAdd').click(function () {
+            $('#modalTitle').text("Thêm mới quá trình giảng dạy");
+            $('#idGiangDay').val('');//đánh dấu cho trường hợp thêm mới
+            $('#modalGiangDay').modal();
+        });
+
+
+        //hàm load ds giáo viên cho select giáo viên
+        function loadDsLop() {
+            $.ajax({
+                url: '/admin/lop/AllLop',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        //nếu lấy dữ liệu thành công, dùng vòng lặp để duyệt mảng trả về và đổ dữ liệu cho select có id là selectGiaoVien
+                        $('#selectLop').empty();
+                        $.each(data.allLop, function (k, v) {
+                            let opt = '<option value = "' + v.Id + '">' + v.TenLop + '</option>';
+                            $('#selectLop').append(opt);
+                        });
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        //hàm load ds giáo viên cho select giáo viên
+        function loadDsGv() {
+            $.ajax({
+                url: '/admin/giaovien/AllGiaoVien',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        //nếu lấy dữ liệu thành công, dùng vòng lặp để duyệt mảng trả về và đổ dữ liệu cho select có id là selectGiaoVien
+                        $('#selectGiaoVien').empty();
+                        $.each(data.dsGv, function (k, v) {
+                            let opt = '<option value = "' + v.Id + '">' + v.HoTen + '</option>';
+                            $('#selectGiaoVien').append(opt);
+                        });
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        //hàm load ds môn học đổ dữ liệu cho select có id là selectMon
+        function loadDsMh(){
+            $.ajax({
+                url: '/admin/monhoc/AllMonHoc',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#selectMon').empty();
+                        $.each(data.allMh, function (k, v) {
+                            let opt = '<option value = "' + v.Id + '">' + v.TenMH + '</option>';
+                            $('#selectMon').append(opt);
+                        });
+                    } else {
+                        alert(data.msg);
+                    }
+
+                }
+            })
+        }
+
+
+       
+    </script>
+}

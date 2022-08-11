@@ -1,0 +1,372 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-sm-2">
+        <select id="slKhoi" class="form-control"></select>
+    </div>
+    <div class="col-sm-2">
+        <select id="slLop" class="form-control"></select>
+    </div>
+   
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Nhập học</button>
+    </div>
+    
+    <div class="col-sm-2">
+        <select id="slNamHoc" class="form-control"></select>
+    </div>
+    <div class="col-sm-4 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-10">
+    <div class="col-sm-12">
+        <nav aria-label="...">
+            <ul class="pagination pagination-sm" id="phanTrang"></ul>
+        </nav>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modalNhapHoc">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle">Danh sách học sinh chưa nhập học</div>
+                <div class="panel-body">
+                    <div class="row mt-10">
+                        <div class="col-sm-6">
+                            <nav aria-label="...">
+                                <ul class="pagination pagination-sm" id="phanTrang1"></ul>
+                            </nav>
+                        </div>
+
+                        <div class="col-sm-6 text-right">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch1" />
+                                <div class="input-group-btn">
+                                    <button class="btn btn-primary" type="submit" id="btnSearch1">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    STT
+                                </th>
+                                <th>
+                                    Họ tên
+                                </th>
+                                <th>
+                                    Ngày sinh
+                                </th>
+                                <th>Địa chỉ</th>
+                                <th>Điện thoại</th>
+                                <th>Email</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblHsChuaNhapHoc"> </tbody>
+                    </table>
+
+                </div>    
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                Họ tên
+            </th>
+            <th>
+                Ngày sinh 
+            </th>
+            <th>
+                Điện thoại
+            </th>
+            <th>Địa chỉ</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody id="tblDsHsDaNhapHoc"> </tbody>
+
+</table>
+
+
+
+@section scripts{
+    <script>
+        var page = 1;
+        var tuKhoa = "";
+
+        var page1 = 1;
+        var tuKhoa1 = "";
+
+        $(document).ready(function () {
+            LoadDsKhoi();
+            LoadYears();
+            LoadDsHsDaNhapHoc();
+        })
+
+
+        //sự kiện click của button tìm kiếm dshs đã nhập học
+        $('#btnSearch').click(function () {
+            LoadDsHsDaNhapHoc();
+        })
+
+        //sự kiện click của button tìm kiếm dshs chưa nhập học
+        $('#btnSearch1').click(function () {
+            tuKhoa1 = $('#txtSearch1').val();
+            LoadDsHsChuaNhapHoc();
+        })
+
+        //sự kiện click của trang dshs đã nhập học
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            page = $(this).text();
+            LoadDsHsDaNhapHoc();
+        });
+
+        //sự kiện click của trang trên modal dshs chưa nhập học
+        $("#phanTrang1").on("click", "li", function (e) {
+            e.preventDefault();
+            page1 = $(this).text();
+            LoadDsHsChuaNhapHoc();
+        });
+
+
+
+        function LoadDsHsDaNhapHoc() {
+            $.ajax({
+                url: '/admin/nhaphoc/DsHsDaNhapHoc',
+                type: 'get',
+                data: {
+                    namHoc: $('#slNamHoc option:selected').val(),
+                    trang: page,
+                    tuKhoa: $('#txtSearch').val()
+                },
+                success: function (data) {
+                    let idx = 1;
+                    $('#tblDsHsDaNhapHoc').empty();
+                    data.dshs.forEach(hs=> {
+                        let tr = '<tr>';
+                        tr += '<td>' + (idx++) + '</td>';
+                        tr += '<td>' + hs.HoTen + '</td>';
+                        tr += '<td>' + ConvertJsonDateString(hs.NgaySinh) + '</td>';
+                        tr += '<td>' + hs.DienThoai + '</td>';
+                        tr += '<td>' + hs.DiaChi + '</td>';
+                        tr += '<td>' + hs.Email + '<td>';
+                        tr += '</tr>';
+
+                        $('#tblDsHsDaNhapHoc').append(tr);
+
+                        //phân trang
+
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + page + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+                    })
+                }
+            })
+        }
+
+
+        function LoadYears() {
+            $('#slNamHoc').empty();
+            let currentYear = new Date().getFullYear();
+            for (i = currentYear; i >= currentYear - 10; i--) {
+                let option = '<option values = "' + i + '">' + i + '</option>';
+                $('#slNamHoc').append(option);
+            }
+        }
+
+
+
+
+        var success = 0;
+
+        $('#btnSubmit').click(function () {
+            $('#tblHsChuaNhapHoc  > tr').each(function (index, tr) {   
+                if ($(this).find('input').is(":checked")) {
+                    let MaHocSinh = $(this).attr('id');
+                    let idLop = $('#slLop option:selected').val();
+                    NhapHoc(MaHocSinh,idLop);
+                }
+            });
+            alert('Nhập học thành công!');
+            $('#modalNhapHoc').modal('hide');
+        })
+
+
+
+        $(window).on('shown.bs.modal', function () {
+            LoadDsHsChuaNhapHoc();          
+        });
+
+        $('#btnAdd').click(function(){
+            $('#modalNhapHoc').modal();
+        })
+
+
+        $('#slKhoi').on('change', function () {           
+            let idKhoi = $('#slKhoi option:selected').val();
+            LoadDsLop(idKhoi);
+        });
+
+        function NhapHoc(MaHocSinh, idLop) {
+            $.ajax({
+                url: '/admin/nhaphoc/NhapHoc',
+                type: 'post',
+                data: {
+                    MaHocSinh: MaHocSinh,
+                    idLop: idLop
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        success = 1;
+                    }
+                }
+            })
+        }
+
+
+
+        function LoadDsHsChuaNhapHoc() {
+            $.ajax({
+                url: '/admin/nhaphoc/DsHSChuaXepLop',
+                type: 'get',
+                data:{
+                    page: page1,
+                    tuKhoa: tuKhoa1
+                },
+                success: function (data) {
+                    if (data.code == 200) {
+                        console.log(data);
+                        let idx = 1;
+                        $('#tblHsChuaNhapHoc').empty();
+                        data.dshs.forEach(hs=> {
+                            let tr = '<tr id="'+hs.MaHocSinh+'">';
+                            tr += '<td>'+(idx++)+'</td>';
+                            tr += '<td>'+hs.HoTen+'</td>';
+                            tr += '<td>' + ConvertJsonDateString(hs.NgaySinh) + '</td>';
+                            tr += '<td>'+hs.DiaChi+'</td>';
+                            tr += '<td>' + hs.DienThoai + '</td>';
+                            tr += '<td>' + hs.Email + '</td>';
+                            tr += '<td><input type="checkbox" /></td>'
+                            tr += '</tr>';
+                            $('#tblHsChuaNhapHoc').append(tr);
+                        })
+
+                        //phân trang
+
+                        $('#phanTrang1').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang1').append(li);
+                        }
+
+                        let li = $('#phanTrang1 li#' + page1 + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+                    }
+                }
+            })
+        }
+
+
+        function LoadDsKhoi() {
+            $.ajax({
+                url: '/admin/khoi/AllKhoi',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        data.allKhoi.forEach(k => {
+                            let option = '<option value = "' + k.Id + '">' + k.TenKhoi + '</option>';
+                            $('#slKhoi').append(option);
+                        })
+                        let idKhoi = $('#slKhoi option:selected').val();
+                        LoadDsLop(idKhoi);                      
+
+                    }
+                }
+            })
+        }
+
+        
+
+
+        function LoadDsLop(idKhoi) {
+            $.ajax({
+                url: '/admin/lop/AllLopByKhoiId',
+                type: 'get',
+                data:{
+                    idKhoi
+                },
+                success: function (data) {
+                  
+                    if (data.code == 200) {
+                        $('#slLop').empty();
+                        data.allLop.forEach(l=> {
+                            let option = '<option value ="' + l.Id + '">' + l.TenLop + '</option>';
+                            $('#slLop').append(option);
+                        })
+                    }
+                }
+            })
+        }
+
+        function ConvertJsonDateString(jsonDate) {  
+            var shortDate = null;    
+            if (jsonDate) {  
+                var regex = /-?\d+/;  
+                var matches = regex.exec(jsonDate);  
+                var dt = new Date(parseInt(matches[0]));  
+                var month = dt.getMonth() + 1;  
+                var monthString = month > 9 ? month : '0' + month;  
+                var day = dt.getDate();  
+                var dayString = day > 9 ? day : '0' + day;  
+                var year = dt.getFullYear();  
+                shortDate = monthString + '/' + dayString + '/' + year;  
+            }  
+            return shortDate;  
+        };
+    </script>
+}

@@ -1,0 +1,414 @@
+﻿
+@{
+    ViewBag.Title = "Tạo đề thi";
+    Layout = "~/Areas/teacher/Views/Shared/_TeacherLayout.cshtml";
+}
+
+
+<div class="row">
+    <div class="col-sm-1">
+        <label>Môn:</label>
+    </div>
+    <div class="col-sm-5">
+        <select id="selectMon" class="form-control"></select>
+    </div>
+
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Tạo đề thi</button>
+    </div>
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnApply"><i class="fa fa-plus" aria-hidden="true"></i> Phê duyệt đề thi</button>
+    </div>
+
+</div>
+
+<table class="table" style="margin-top: 30px;">
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                Loại đề
+            </th>
+            <th>Ngày thi</th>
+            <th>Thời gian</th>
+            <th>Đã duyệt</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="tblDsDT"> </tbody>
+
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalTaoDeThi">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h5 class="modal-title">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-3 col-sm-3 col-xs-4">
+                        <div class="form-group">
+                            <label>Ngày thi:</label>
+                            <div class="input-group date" data-provide="datepicker">
+                                <input type="text" class="form-control" id="ngayThi">
+                                <div class="input-group-addon">
+                                    <span class="glyphicon glyphicon-th"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7 col-sm-7 col-xs-6">
+                        <div class="form-group">
+                            <label>Nhóm đề thi:</label>
+                            <select class="form-control" id="slNhomDeThi"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 col-sm-2 col-xs-2">
+                        <button class="btn btn-success" id="btnSubmit" style="margin-top:25px;">Xác nhận</button>
+                    </div>
+
+                </div>
+            </div>
+          
+        </div>
+    </div>
+</div>
+
+
+
+<div id="modalChiTietDeThi" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chi tiết đề thi</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Chương</label>
+                            <select id="slChuong" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Bài</label>
+                            <select id="slBai" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Mức độ khó</label>
+                            <select id="slMDK" class="form-control"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row " style="margin-top: 10px;">
+                    <div class="col-md-12">
+                        <div class="input-group">
+                            <select id="slDSCauHoi" class="form-control "></select>
+                            <div class="input-group-btn">
+                                <button class="btn btn-success" type="submit" id="btnAddCH">
+                                    <i class="fa fa-plus" aria-hidden="true"></i> Thêm câu hỏi
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <table class="table" style="margin-top: 30px;">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>
+                                Câu hỏi
+                            </th>
+                            <th>
+                                Đáp án A
+                            </th>
+                            <th>Đáp án B</th>
+                            <th>Đáp án C</th>
+                            <th>Đáp án D</th>
+                            <th>Đáp án đúng</th>
+                            <th>Mức độ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblDsCH"> </tbody>
+
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <link href="~/Content/datepicker/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <script src="~/Content/datepicker/js/bootstrap-datepicker.js"></script>
+
+   
+
+    <script>
+        var stt = 1;
+        var idDeThi = "";
+        $(document).ready(function () {
+            LoadListSubjects();
+            LoadExamGroup();
+            LoadMDK();
+        })
+
+        $(document).on('show.bs.modal', '#modalChiTietDeThi', function () {
+            LoadDsChuong();
+            LoadChiTietDeThi();
+        });
+
+        //$(function () {
+        //    $('.selectpicker').selectpicker();
+        //});
+
+        $('#btnAddCH').click(function () {
+            $.ajax({
+                url: '/teacher/CauHoi/AddCauHoi',
+                type: 'post',
+                data: {
+                    idDeThi,
+                    idCauHoi: $('#slDSCauHoi option:selected').val()
+                },
+                success: function (data) {
+                    alert(data.msg);
+                    LoadChiTietDeThi();
+                }
+            })
+        });
+
+        $('#selectMon').on('change', function () {
+            LoadExamsList();
+        });
+        $('#slChuong').on('change', function () {
+            LoadDsBai();
+        });
+
+        $('#slBai').on('change', function () {
+            LoadDSCauHoi();
+        });
+
+        $('#slMDK').on('change', function () {
+            LoadDSCauHoi();
+        });
+
+
+        function LoadChiTietDeThi() {
+            $.ajax({
+                url: '/teacher/cauhoi/ListDTCT',
+                type: 'get',
+                data: {
+                    idDeThi
+                },
+                success: function (data) {
+                    $('#tblDsCH').empty();
+                    let stt = 1;
+                    data.dsCauHoi.forEach(ch => {
+                        let tr = '<tr id = "' + ch.Id + '">';
+                        tr += '<td>' + (stt++) + '</td>';
+                        tr += '<td class = "text-primary">' + ch.CauHoi + '</td>';
+                        tr += '<td>' + ch.DA + '</td>';
+                        tr += '<td>' + ch.DB + '</td>';
+                        tr += '<td>' + ch.DC + '</td>';
+                        tr += '<td>' + ch.DD + '</td>';
+                        tr += '<td>' + ch.DAD + '</td>';
+                        tr += '<td>' + ch.MDK + '</td>';
+                        tr += '</tr>';
+                        $('#tblDsCH').append(tr);
+                    })
+                }
+            })
+        }
+
+        function LoadDSCauHoi() {
+            $.ajax({
+                url: '/teacher/CauHoi/ListCauHoi',
+                type: 'get',
+                data: {
+                    idBai: $('#slBai option:selected').val(),
+                    idMDK: $('#slMDK option:selected').val()
+                },
+                success: function (data) {
+                    console.log(data);
+                    $('#slDSCauHoi').empty();
+                    data.dsCH.forEach(ch => {
+                        $('#slDSCauHoi').append('<option value = "' + ch.Id + '">' + ch.CauHoi + '</option>');
+                    })
+                }
+            })
+        }
+
+        function LoadMDK() {
+
+            $.ajax({
+                url: '/teacher/CauHoi/ListMDK',
+                type: 'get',
+                success: function (data) {
+                    $('#slMDK').empty();
+                    data.dsMDK.forEach(m => {
+                        $('#slMDK').append('<option value = "' + m.Id + '">' + m.TenMDK + '</option>')
+                    })
+                }
+            })
+        }
+        function LoadDsBai() {
+
+
+            $.ajax({
+                url: '/teacher/CauHoi/ListBai',
+                type: 'get',
+                data: {
+                    idChuong: $('#slChuong option:selected').val()
+                },
+                success: function (data) {
+
+                    $('#slBai').empty();
+                    data.dsBai.forEach(b => {
+                        $('#slBai').append('<option value = "' + b.Id + '">' + b.TenBai + '</option>')
+                    })
+                    LoadDSCauHoi();
+                }
+            })
+        }
+
+        function LoadDsChuong() {
+
+
+            $.ajax({
+                url: '/teacher/CauHoi/ListChuong',
+                type: 'get',
+                data: {
+                    idMH: $('#selectMon option:selected').val()
+                },
+                success: function (data) {
+
+                    $('#slChuong').empty();
+                    data.dsCH.forEach(ch => {
+                        $('#slChuong').append('<option value = "' + ch.Id + '">' + ch.TenChuong + '</option>')
+                    })
+                    LoadDsBai();
+                }
+            })
+        }
+
+
+        $(document).on("click", "button[name='btnList']", function () {
+            idDeThi = $(this).closest("tr").attr("id");
+            console.log(idDeThi);
+            $('#modalChiTietDeThi').modal();
+        })
+
+
+        $('#btnSubmit').click(function () {
+            let ngayThi = $('#ngayThi').val();
+            let nhomDeThi = $('#slNhomDeThi option:selected').val();
+            let idMonHoc = $('#selectMon option:selected').val();
+
+            $.ajax({
+                url: '/dethi/TaoDeThi',
+                type: 'post',
+                data: {
+                    ngayThi,
+                    nhomDeThi,
+                    idMonHoc
+                },
+                success: function (data) {
+                    alert(data.msg);
+                    $('#modalTaoDeThi').modal('hide');
+                    LoadExamsList();
+                }
+            })
+        })
+
+        $('#btnAdd').click(function () {
+            $('#modalTaoDeThi').modal();
+        })
+
+        function LoadExamsList() {
+            $.ajax({
+                url: '/teacher/dethi/LoadExamsList',
+                type: 'get',
+                data: {
+                    idMonHoc: $('#selectMon option:selected').val()
+                },
+                success: function (data) {
+                    $('#tblDsDT').empty();
+                    data.dsDT.forEach(d => {
+                        let tr = '<tr id = "' + d.MaDT + '">';
+                        tr += '<td>' + (stt++) + '</td>';
+                        tr += '<td>' + d.LoaiDe + '</td>';
+                        tr += '<td>' + formatJsonDate(d.NgayThi) + '</td>';
+                        tr += '<td>' + d.ThoiGian + '</td>';
+                        tr += '<td>' + (d.TrangThai == 1 ? 'Đã duyệt' : 'Chưa duyệt') + '</td>';
+                        tr += '<td> <button class="btn btn-sm btn-info" name="btnList"><i class="fa fa-list" aria-hidden="true"></i></button></td>';
+                        tr += '</tr>';
+                        $('#tblDsDT').append(tr);
+                    })
+                }
+            })
+        }
+
+        function LoadExamGroup() {
+            $.ajax({
+                url: '/teacher/dethi/ListExamGroup',
+                type: 'get',
+                success: function (data) {
+                    console.log(data);
+                    $('#slNhomDeThi').empty();
+                    data.dsNhom.forEach(d => {
+                        let opt = '<option value = "' + d.ID + '">' + d.TenNhom + '</option>';
+                        $('#slNhomDeThi').append(opt);
+                    })
+                }
+            })
+        }
+
+        function LoadListSubjects() {
+            $.ajax({
+                url: '/teacher/dethi/ListSubjects',
+                type: 'get',
+                success: function (data) {
+                    $('#selectMon').empty();
+                    data.dsMH.forEach(m => {
+                        let opt = '<option value = "' + m.IdMh + '">' + m.TenMH + '</option>';
+                        $('#selectMon').append(opt);
+                    })
+                    LoadExamsList();
+                }
+            })
+        }
+
+        function formatJsonDate(jsonDate) {
+            var pattern = /Date\(([^)]+)\)/;
+            var results = pattern.exec(jsonDate);
+            var dt = new Date(parseFloat(results[1]));
+            // get date in dd/MM/yyyy format
+            return (dt.getDate() + "/" + (dt.getMonth() + 1) + "/" + dt.getFullYear());
+        };
+
+    </script>
+}

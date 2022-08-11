@@ -1,0 +1,631 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/teacher/Views/Shared/_TeacherLayout.cshtml";
+}
+
+
+<div class="row">    
+    <div class="col-sm-1">
+        <label>Môn:</label>
+    </div>
+    <div class="col-sm-4">        
+        <select id="selectMon" class="form-control"></select>
+    </div>
+
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" ></i> Thêm câu hỏi</button>
+    </div>
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnApply"><i class="fa fa-plus" ></i> Phê duyệt câu hỏi</button>
+    </div>
+    <div class="col-sm-2 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="...">
+    <ul class="pagination pagination-sm" id="phanTrang"></ul>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                Câu hỏi
+            </th>
+            <th>Ngày tạo</th>
+            <th>Người tạo</th>
+            <th>Ngày sửa</th>
+            <th>Người sửa</th>
+            <th>Đã duyệt</th>
+            <th>Người duyệt</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="tblDsCH"> </tbody>
+
+</table>
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalCauHoi">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <div class="row">                        
+                        <div class="col-sm-12 form-group">
+                            <label>Chương:</label>
+                            <select id="selectChuong" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bài:</label>
+                        <select id="selectBai" class="form-control"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Câu hỏi</label>
+                        <textarea class="form-control" rows="2" id="txaCauHoi"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Đáp án A:</label>
+                        <textarea class="form-control" rows="1" id="txaDapAnA"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Đáp án B:</label>
+                        <textarea class="form-control" rows="1" id="txaDapAnB"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Đáp án C:</label>
+                        <textarea class="form-control" rows="1" id="txaDapAnC"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Đáp án D:</label>
+                        <textarea class="form-control" rows="1" id="txaDapAnD"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label>Mức độ khó:</label>
+                            <select id="selectMDK" class="form-control"></select>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <label>Đáp án đúng:</label>
+                            <select id="selectDAD" class="form-control"></select>
+                        </div>
+
+
+                        <div class="col-sm-8">
+                            <div class="form-group">
+                                <label>Ghi chú:</label>
+                                <textarea class="form-control" rows="1" id="txaGhiChu"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="modalDuyet">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" >Phê duyệt câu hỏi</div>
+                <div class="panel-body">
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    STT
+                                </th>
+                                <th>
+                                    Câu hỏi
+                                </th>
+                                <th>Đáp án A</th>
+                                <th>Đáp án B</th>
+                                <th>Đáp án C</th>
+                                <th>Đáp án D</th>
+                                <th>Đáp án</th>
+                                <th>Mức độ khó</th>
+                                <th>Ghi chú</th>                                
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblDsCHCPD"> </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnPD">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var idCH = "";
+        var tuKhoa = "";
+        var trang = 1;
+        $(document).ready(function () {
+            LoadDsMh();
+            LoadMDK();
+            LoadDAD();
+           
+        })
+
+
+
+        $('#btnPD').click(function () {
+            $('#tblDsCHCPD  > tr').each(function (index, tr) {
+                if ($(this).find('input').is(":checked")) {
+                    let idCH = $(this).attr('id');
+                    $.ajax({
+                        url: '/teacher/cauhoi/apply',
+                        type: 'post',
+                        data: {
+                            id:idCH
+                        },
+                        success: function (data) {
+                            if (data.code == 200) {
+                                console.log(data.msg);
+                            }
+                        },
+                        failed: function (err) {
+                            alert('Loi')
+                        }
+                    })
+                 
+                }
+            });
+            LoadDSCH();
+        })
+
+
+
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let id = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa câu hỏi này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/teacher/cauhoi/delete',
+                    type: 'post',
+                    data: {
+                        id: id
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDSCH();
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        $(document).on('click', "button[name='update']", function () {
+            idCH = $(this).closest('tr').attr('id');
+            GetDetail(idCH);
+            $('#btnSubmit').show();
+        });
+
+        //sự kiện click button chi tiết của mỗi dòng table
+        $(document).on('click', "button[name='view']", function () {
+            idCH = $(this).closest('tr').attr('id');// id cua hàng được chọn chính là id câu hỏi
+            GetDetail(idCH);
+            $('#btnSubmit').hide();
+        });
+
+        function GetDetail(id) {
+            $.ajax({
+                url: '/teacher/cauhoi/detail',
+                type: 'get',
+                data: {
+                    id
+                    },
+                        success: function (data) {
+                            $('#txaCauHoi').val(data.c.CauHoi);
+                            $('#txaDapAnA').val(data.c.DA);
+                            $('#txaDapAnB').val(data.c.DB);
+                            $('#txaDapAnC').val(data.c.DC);
+                            $('#txaDapAnD').val(data.c.DD);
+                            $('#txaGhiChu').val(data.c.GhiChu);
+
+                            $('#selectChuong').val(data.c.IdChuong);
+                            $('#selectBai').val(data.c.IdBai);
+                            $('#selectMDK').val(data.c.MDK);
+                            $('#selectDAD').val(data.c.DAD);                           
+                            $('#modalCauHoi').modal();
+                        }
+            })
+        }
+
+
+        $('#btnApply').click(function () {
+            $.ajax({
+                url: '/teacher/cauhoi/ListUnapply',
+                type: 'get',
+                data: {
+                    idMH:$('#selectMon option:selected').val()
+                },
+                success: function (data) {
+                    console.log(data);
+                    $('#tblDsCHCPD').empty();
+                    if (data.code == 200) {
+                        let idx = 1;
+                        data.dsCH.forEach(c => {
+                            let tr = '<tr id="' + c.Id + '">';
+                            tr += '<td>'+(idx++)+'</td>';
+                            tr += '<td>'+c.CauHoi+'</td>';
+                            tr += '<td>'+c.DA+'</td>';
+                            tr += '<td>'+c.DB+'</td>';
+                            tr += '<td>'+c.DC+'</td>';
+                            tr += '<td>'+c.DD+'</td>';
+                            tr += '<td>'+c.DAD+'</td>';
+                            tr += '<td>'+c.MDK+'</td>';
+                            tr += '<td>'+c.GhiChu+'</td>';
+                            tr += '<td><input type="checkbox" /></td>'
+                            tr += '</tr>';
+                            $('#tblDsCHCPD').append(tr);
+                        })
+                    }
+                }
+            })
+            $('#modalDuyet').modal();
+        })
+
+
+
+        $('#btnSubmit').click(function () {
+            let idBai = $('#selectBai option:selected').val();
+            let cauHoi = $('#txaCauHoi').val().trim();
+            let dA = $('#txaDapAnA').val().trim();
+            let dB = $('#txaDapAnB').val().trim();
+            let dC = $('#txaDapAnC').val().trim();
+            let dD = $('#txaDapAnD').val().trim();
+            let dAD = $('#selectDAD option:selected').val();
+            let MDK = $('#selectMDK option:selected').val();
+            let ghiChu = $('#txaGhiChu').val();
+
+            //rang buoc du lieu
+            if (idBai == null) {
+                alert('Vui lòng chọn bài học tương ứng!');
+                return;
+            }
+
+            if (cauHoi.length == 0 || dA.length == 0 || dB.length == 0 || dC.length == 0 || dD.length == 0) {
+                alert('Vui lòng nhập đầy đủ nội dung câu hỏi và các đáp án!');
+                return;
+            }
+
+            if (idCH.trim().length == 0) {//truong hop them moi cau hoi
+                $.ajax({
+                    url: '/teacher/cauhoi/add',
+                    type: 'post',
+                    data: {
+                        idBai: idBai,
+                        cauHoi: cauHoi,
+                        da: dA,
+                        dB: dB,
+                        dC: dC,
+                        dD: dD,
+                        dAD: dAD,
+                        MDK: MDK,
+                        ghiChu: ghiChu
+                    },
+                    success: function (data) {
+                        if (data.code == 201) {
+                            alert(data.msg);
+                            LoadDSCH();//cập nhật lại ds câu hỏi đc hiển thị
+                            $('#txaCauHoi').val('');
+                            $('#txaDapAnA').val('');
+                            $('#txaDapAnB').val('');
+                            $('#txaDapAnC').val('');
+                            $('#txaDapAnD').val('');
+                            $('#txaGhiChu').val('');
+                        }
+                    },
+                    error: function (err) {
+
+                    }
+                })
+            } else {//cap nhat cau hoi
+                $.ajax({
+                    url: '/teacher/cauhoi/edit',
+                    type: 'post',
+                    data: {
+                        id: idCH,
+                        idBai: idBai,
+                        cauHoi: cauHoi,
+                        da: dA,
+                        dB: dB,
+                        dC: dC,
+                        dD: dD,
+                        dAD: dAD,
+                        MDK: MDK,
+                        ghiChu: ghiChu
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            $('#modalCauHoi').modal('hide');
+                            LoadDSCH();
+                            idCH = "";
+                        }
+                    }
+                })
+            }
+        })
+
+
+
+        $('#btnAdd').click(function () {
+            idCH = "";
+            $('#btnSubmit').show();
+            $('#modalTitle').text('Thêm mới câu hỏi');
+            $('#modalCauHoi').modal();
+        })
+
+        $('#btnSearch').click(function () {
+            tuKhoa = $('#txtSearch').val();
+            LoadDSCH();
+        })
+
+        function LoadDSCH() {
+            $.ajax({
+                url: '/teacher/cauhoi/list',
+                type: 'get',
+               
+                data: {
+                    tuKhoa,
+                    trang,
+                    idMH: $('#selectMon option:selected').val()
+                    },
+                success: function (data) {
+                    console.log(data);
+                    $('#tblDsCH').empty();
+                    if (data.code == 200) {
+                        let idx = 1;
+                        if (data.isTBM) {
+                            $('#btnApply').show();
+                        } else {
+                            $('#btnApply').hide();
+                        }
+                      
+
+                        data.dsCH.forEach(c=> {
+                            let tr = '<tr id ="' + c.Id + '">';
+                            tr += '<td>' + (idx++) + '</td>';
+                            tr += '<td>' + c.CauHoi + '</td>';
+                            
+                            tr += '<td>' + ConvertJsonDateString(c.NgayTao) + '</td>';
+                            tr += '<td>' + c.NguoiTao + '</td>';
+                            tr += '<td>' + (c.NgaySua == null ? '' : ConvertJsonDateString(c.NgaySua) ) + '</td>';
+                            tr += '<td>' + (c.NguoiSua == null ? '' : c.NguoiSua) + '</td>';
+                            tr += '<td class = "text-center">' + (c.DaDuyet == null ? '<i class="fa fa-square-o" aria-hidden="true"></i>' : '<i class="fa fa-check-square-o text-success" aria-hidden="true"></i>') + '</td>'
+                            tr += '<td>' + (c.NguoiDuyet == null ? '' : c.NguoiDuyet) + '</td>';
+                            tr += '<td class = "text-right text-nowrap">';
+
+                            tr += '<button class = "btn btn-xs btn-info" name = "view"><i class="fa fa-info-circle" aria-hidden="true"></i></button>&nbsp;';
+
+
+                            //--- nếu câu hỏi chưa được phê duyệt thì mới được xóa, sửa trong các trường hợp sau:
+                            //-- trưởng bộ môn sẽ có quyền xóa, sửa các câu hỏi chưa duyệt thuộc môn mình phụ trách
+                            // -- gv bình thường ( nhân viên ) chỉ có quyền xóa sửa câu hỏi của mình
+                            if (c.DaDuyet != 1) {
+                                if (data.isTBM) {
+                                    tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                                    tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                                } else {
+                                    if (data.idDangNhap == c.IdNguoiTao) {
+                                        tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                                        tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                                    }
+                                }                               
+                            }
+                           
+                            
+                            tr += '</td>';
+                            tr += '</tr>';
+                            $('#tblDsCH').append(tr);
+                        });
+
+                        //phân trang
+
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+                    }
+                        }
+            })
+        }
+
+
+      
+        function LoadDsMh() {
+
+            $.ajax({
+                url: '/teacher/cauhoi/ListMonHoc',
+                type: 'get',               
+                success: function (data) {
+                    $('#selectMon').empty();
+                    if (data.code == 200) {
+                        data.allMh.forEach(m=> {
+                            let option = '<option value="' + m.Id + '">' + m.TenMh + '</option>';
+                            $('#selectMon').append(option);
+                        })
+
+                        if (data.allMh.length > 0) {
+                            LoadDsChuong();
+                            LoadDSCH();
+                        } else {
+                            $('#selectChuong').empty();
+                            $('#selectBai').empty();
+                        }
+                    }
+                }
+            })
+        }
+
+        function LoadDsChuong() {
+            if ($('#selectMon option:selected').val() == null) {
+                return;
+            }
+            $.ajax({
+                url: '/teacher/cauhoi/ListChuongByMhId',
+                type: 'get',
+                data: {
+                    idMh: $('#selectMon option:selected').val()
+                },
+                success: function (data) {
+                    $('#selectChuong').empty();
+                    if (data.code == 200) {
+
+                        let idx = 1;
+                        data.chuongs.forEach(c=> {
+                            let option = '<option value = "' + c.Id + '">' + c.TenChuong + '</option>';
+                            $('#selectChuong').append(option);
+                        });
+                        if (data.chuongs.length > 0) {
+                            LoadDsBai();
+                        } else {
+                            $('#selectBai').empty();
+                        }
+                    }
+                }
+            })
+        }
+
+        function LoadDsBai() {
+            $.ajax({
+                url: '/teacher/cauhoi/ListBaiByIdChuong',
+                type: 'get',
+                data: {
+
+                    idChuong: $('#selectChuong option:selected').val()
+                },
+                success: function (data) {
+                    $('#selectBai').empty();
+
+                    if (data.code == 200) {
+
+                        data.dsBh.forEach(b=> {
+                            let option = '<option value="' + b.Id + '">' + b.TenBai + '</option>';
+
+                            $('#selectBai').append(option);
+                        });
+
+                    }
+                }
+            })
+        }
+
+
+        function LoadMDK() {
+            $.ajax({
+                url: '/teacher/cauhoi/ListMDK',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#selectMDK').empty();
+                        data.dsMDK.forEach(m=> {
+                            let option = '<option value = "' + m.Id + '">' + m.TenMDK + '</option>';
+                            $('#selectMDK').append(option);
+                        })
+                    }
+                }
+            })
+        }
+
+
+        function LoadDAD() {
+            $.ajax({
+                url: '/teacher/cauhoi/listdad',
+                type: 'get',
+                success: function (data) {
+                    if (data.code == 200) {
+                        $('#selectDAD').empty();
+                        data.dad.forEach(d=> {
+                            let option = '<option value = "' + d.Id + '">' + d.DapAnDung + '</option>';
+                            $('#selectDAD').append(option);
+                        })
+                    }
+                }
+            })
+        }
+
+       
+
+        $("#selectMon").change(function () {
+            LoadDsChuong();
+            LoadDSCH();
+        });
+        $("#selectChuong").change(function () {
+            LoadDsBai();
+        });
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            LoadDSCH();
+        });
+
+        function ConvertJsonDateString(jsonDate) {
+            var shortDate = null;
+            if (jsonDate) {
+                var regex = /-?\d+/;
+                var matches = regex.exec(jsonDate);
+                var dt = new Date(parseInt(matches[0]));
+                var month = dt.getMonth() + 1;
+                var monthString = month > 9 ? month : '0' + month;
+                var day = dt.getDate();
+                var dayString = day > 9 ? day : '0' + day;
+                var year = dt.getFullYear();
+                shortDate = monthString + '/' + dayString + '/' + year;
+            }
+            return shortDate;
+        };
+    </script>
+
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="29da3072aa8c4fcb9243d34a89f0e240" Name="Diagram1">
+        <EntityTypeShape EntityType="DBModel.Admin" Width="1.5" PointX="8.75" PointY="8.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.Bai" Width="1.5" PointX="7.5" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.CauHinh" Width="1.5" PointX="10.75" PointY="8.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.CauHois" Width="1.5" PointX="9.75" PointY="2.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.Chuong" Width="1.5" PointX="5.25" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.DapAn" Width="1.5" PointX="7.5" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.Day" Width="1.5" PointX="3" PointY="7.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.DeThi_ChiTiets" Width="1.5" PointX="12" PointY="5.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.DeThi" Width="1.5" PointX="6" PointY="7.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.GiaoVien" Width="1.5" PointX="0.75" PointY="7.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.Hoc" Width="1.5" PointX="14.25" PointY="8.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.HocSinh" Width="1.5" PointX="12" PointY="0.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.KetQua" Width="1.5" PointX="14.25" PointY="5.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.Khois" Width="1.5" PointX="0.75" PointY="4" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.Lop" Width="1.5" PointX="0.75" PointY="11.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.MonHoc" Width="1.5" PointX="3" PointY="3.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.MucDoKho" Width="1.5" PointX="7.5" PointY="12.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="DBModel.NhomDeThi" Width="1.5" PointX="3.75" PointY="12" IsExpanded="true" />
+        <AssociationConnector Association="DBModel.FK_Bais_Chuongs" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_CauHois_Bais" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_CauHois_DapAns" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_CauHois_MucDoKhos" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_DeThi_ChiTiets_CauHois" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Chuongs_MonHocs" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Days_GiaoViens" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Days_Lops1" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Days_MonHocs" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_DeThi_ChiTiets_DeThis" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_KetQuas_DeThi_ChiTiets" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_DeThis_GiaoViens" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_DeThis_MonHocs" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_DeThis_NhomDeThis" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_MonHocs_GiaoViens" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Hocs_HocSinhs" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Hocs_Lops" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_KetQuas_ThanhViens" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_Lops_Khois" ManuallyRouted="false" />
+        <AssociationConnector Association="DBModel.FK_MonHocs_Khois" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

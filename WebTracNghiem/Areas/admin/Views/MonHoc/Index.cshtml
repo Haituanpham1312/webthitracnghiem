@@ -1,0 +1,349 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+@*div có class là row gồm button thêm mới và form tìm kiếm*@
+<div class="row">
+    <div class="col-sm-2">
+        <button class="btn btn-success" id="btnAdd"><i class="fa fa-plus" aria-hidden="true"></i> Thêm môn học</button>
+    </div>
+    <div class="col-sm-4 col-sm-offset-6 text-right">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Tìm kiếm" id="txtSearch" />
+            <div class="input-group-btn">
+                <button class="btn btn-primary" type="submit" id="btnSearch">
+                    <span class="glyphicon glyphicon-search"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*phần phân trang*@
+<nav aria-label="...">
+    <ul class="pagination pagination-sm" id="phanTrang"></ul>
+</nav>
+
+
+
+@*table hiển thị danh sách môn học*@
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                STT
+            </th>
+            <th>
+                Tên môn học
+            </th>
+            <th>
+                Thẻ meta
+            </th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody id="tblDsMonHoc"> </tbody>
+
+</table>
+
+
+
+<div class="modal" tabindex="-1" role="dialog" id="modalMonHoc">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel panel-primary">
+                <div class="panel-heading" id="modalTitle"></div>
+                <div class="panel-body">
+                    <input type="text" hidden id="idMonHoc" value="" />                   
+                    <div class="form-group">
+                        <label>Tên môn học</label>
+                        <input type="text" class="form-control" id="tenMonHoc" placeholder="Tên môn học">
+                    </div>
+                    <div class="form-group">
+                        <label>Thẻ meta</label>
+                        <input type="text" class="form-control" id="metaMonHoc" placeholder="Thẻ meta">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSubmit">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+
+    <script>
+
+        var tuKhoa = '';
+        var trang = 1;
+        $(document).ready(function () {
+            //hàm load danh sách môn học cho table
+            LoadDsMonHoc(tuKhoa, trang);          
+         
+        });
+
+
+        //sự kiện xóa lớp
+        $(document).on('click', "button[name='delete']", function () {
+            let id = $(this).closest('tr').attr('id');
+            if (confirm("Bạn thực sự muốn xóa môn học này?")) {
+                //dùng ajax để xóa lớp đc chọn
+                $.ajax({
+                    url: '/admin/monhoc/xoa',
+                    type: 'post',
+                    data: {
+                        id: id
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            LoadDsMonHoc(tuKhoa, trang);//load lại ds môn học sau khi xóa
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        });
+
+
+        //sự kiện của button sửa trên từng dòng
+        $(document).on('click', "button[name='update']", function () {
+           
+            let id = $(this).closest('tr').attr('id');
+
+            //set value cho input text có id idMonHoc để xác định là trường hợp cập nhật
+            $('#idMonHoc').val(id);
+
+            ChitietMH(id);
+
+            //không cho chỉnh sửa các giá trị
+            $('#tenMonHoc').prop('readonly', false);
+            $('#metaMonHoc').prop('readonly', false);
+
+          
+            //set label cho header
+            $('#modalTitle').text('Cập nhật môn học');
+
+            //ẩn button xác nhận
+            $('#btnSubmit').show();
+
+            $('#modalMonHoc').modal();
+        });
+
+        //sự kiện click button chi tiết của mỗi dòng table
+        $(document).on('click', "button[name='view']", function () {
+            let id = $(this).closest('tr').attr('id');
+            ChitietMH(id);
+
+            //không cho chỉnh sửa các giá trị
+            $('#tenMonHoc').prop('readonly', true);
+            $('#metaMonHoc').prop('readonly', true);
+
+           
+
+            //set label cho header
+            $('#modalTitle').text('Thông tin chi tiết môn học');
+
+            //ẩn button xác nhận
+            $('#btnSubmit').hide();
+
+            $('#modalMonHoc').modal();
+        });
+
+        function ChitietMH(id) {
+            $.ajax({
+                url: '/admin/monhoc/ChiTiet',
+                type: 'get',
+                data: {
+                    id: id
+                },
+                success: function (data) {
+                    console.log(data);
+                    if (data.code == 200) {
+                        //nếu lấy thông tin lớp thành công
+                        $('#tenMonHoc').val(data.mh.TenMonHoc);
+                        $('#metaMonHoc').val(data.mh.Meta);                      
+                      
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+
+
+        //sự kiện của button xác nhận
+        $('#btnSubmit').click(function () {         
+            let tenMonHoc = $('#tenMonHoc').val().trim();
+            let metaMonHoc = $('#metaMonHoc').val().trim();
+
+            //ràng buộc dữ liệu
+            if (tenMonHoc.length == 0 || metaMonHoc.length == 0) {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+                return;//dừng chương trình ngang đây
+            }
+
+            //sử dụng ajax để post dữ liệu <-> thêm mới hoặc cập nhật môn học
+            let idMonHoc = $('#idMonHoc').val().trim();
+
+            if (idMonHoc.length == 0) {//trường hợp thêm mới
+                $.ajax({
+                    url: '/admin/monhoc/AddMonHoc',
+                    type: 'post',
+                    data: {
+                        tenMonHoc: tenMonHoc,
+                        metaMonHoc: metaMonHoc                     
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+
+                            //set giá trị mặc định cho các input trên form
+                            $('#tenMonHoc').val('');
+                            $('#metaMonHoc').val('');
+                            LoadDsMonHoc(tuKhoa, trang);//gọi tới hàm load ds môn học
+                        }
+                    }
+                });
+            } else {//trường hợp cập nhật 1 môn học đã tồn tại
+                $.ajax({
+                    url: '/admin/monhoc/EditMonHoc',
+                    type: 'post',
+                    data: {
+                        id:idMonHoc,
+                        tenMonHoc: tenMonHoc,
+                        metaMonHoc: metaMonHoc                     
+                    },
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert(data.msg);
+                            $('#modalMonHoc').modal('hide');
+                            LoadDsMonHoc(tuKhoa, trang);//gọi tới hàm load ds môn học
+                        }
+                    }
+                })
+            }
+
+          
+
+
+        });
+
+        function LoadDsMonHoc(tuKhoa,trang) {
+            $.ajax({
+                url: '/admin/monhoc/DsMonHoc',
+                type: 'get',
+                data: {
+                    tuKhoa: tuKhoa,
+                    trang: trang
+                },
+                success: function (data) {
+                    //console.log(data);
+                    if (data.code == 200) {
+                        $('#tblDsMonHoc').empty();
+                        let idx = 1;
+                        $.each(data.dsMonHoc, function (k, v) {
+                            let tr = '<tr id="' + v.Id + '">'
+                            tr += '<td class = "col-sm-2">' +(idx++) + '</td>';
+                            tr += '<td class = "col-sm-4">' + v.TenMonHoc + '</td>';
+                            tr += '<td class = "col-sm-4">' + v.Meta + '</td>';
+                            tr += '<td class = "col-sm-2 text-right">';
+                            tr += '<button class = "btn btn-xs btn-info" name = "view"><i class="fa fa-info-circle" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-warning" name = "update"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>&nbsp;';
+                            tr += '<button class = "btn btn-xs btn-danger" name = "delete"><i class="fa fa-trash" aria-hidden="true"></i></button>';
+                            tr += '</td>';
+                            tr += '</tr>';
+                            $('#tblDsMonHoc').append(tr);
+                        });
+
+                        //phân trang                      
+                        $('#phanTrang').empty();
+                        for (i = 1; i <= data.soTrang; i++) {
+                            let li = '<li class="page-item" id="' + i + '"><a class="page-link" href="#">' + i + '</a></li>';
+                            $('#phanTrang').append(li);
+                        }
+
+                        let li = $('#phanTrang li#' + trang + '');//tìm li có id = trang truyền vào
+                        //ví dụ trang = 2, sẽ tìm tới cái thằng li có id = 2
+                        //tìm ra đc thằng cần tìm thì add class active để đánh dấu trang hiện tại đang đc load
+                        $(li).addClass('active');
+                     
+                    }
+                }
+            });
+        }
+
+        $('#btnAdd').click(function () {
+            $('#modalTitle').text('Thêm mới môn học');
+
+            //set các giá trị mặc định
+            $('#tenMonHoc').val('');
+            $('#metaMonHoc').val('');
+          
+            //cho phép chỉnh sửa input
+            $('#tenMonHoc').prop('readonly', false);
+            $('#metaMonHoc').prop('readonly', false);
+            $('#idMonHoc').val('');//set rỗng để đánh dấu cho trường hợp thêm mới môn học
+
+            $('#modalMonHoc').modal();
+        });
+
+
+        //sự kiện enter của text có id là txtSearch
+        $('#txtSearch').on('keypress', function (e) {
+            if (e.which == 13) {//nếu phím đc gõ là enter
+                $('#btnSearch').click();//thì gọi tới sự kiện click của button có id là btnSearch
+            }
+        });
+
+        //sự kiện click của button tìm kiếm
+        $('#btnSearch').click(function () {
+            trang = 1;
+            tuKhoa = $('#txtSearch').val();
+            LoadDsMonHoc(tuKhoa, trang);
+        });
+
+
+        //sự kiện click của trang
+        $("#phanTrang").on("click", "li", function (e) {
+            e.preventDefault();
+            trang = $(this).text();
+            LoadDsMonHoc(tuKhoa, trang);
+        });
+
+
+       
+
+        //sự kiện nhập của text tên môn học
+        $('#tenMonHoc').keyup(function () {
+            $('#metaMonHoc').val(getMeta($(this).val()));
+        });
+
+        //hàm lấy chuỗi tiếng việt không dấu, được ngăn cách với nhau bằng dấu -
+        function getMeta(title) {
+            return title.toLowerCase().trim()//đưa hết về kiểu chữ thường và loại bỏ khoảng trống thừa đầu và cuối của chuỗi                    
+                    .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+                    .replace(/\ /g, '-').replace(/đ/g, "d")
+                    .replace(/đ/g, "d")
+                    .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+                    .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+                    .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ.+/g, "o")
+                    .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ.+/g, "e")
+                    .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+                    .replace(/\s+/g, '-')           // thay thế khoảng trắng bằng dấu - 
+                    .replace(/&/g, '-va-')         // thay thế kí tự & bằng -va-
+                    .replace(/[^\w\-]+/g, '')       // loại bỏ các khoảng trắng thừa
+                    .replace(/\-\-+/g, '-');         // thay thế các kí tự - liên tục bằng 1 kí tự -
+
+        }
+
+    </script>
+}
